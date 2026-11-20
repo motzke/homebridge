@@ -1,0 +1,312 @@
+/**
+ * Cluster Handler Map
+ *
+ * Maps Matter cluster names to their typed handler interfaces.
+ * Provides IDE autocomplete for plugin developers when defining
+ * command handlers on MatterAccessory.handlers.
+ *
+ * Handler argument types are derived from @matter/main/clusters where possible,
+ * so they automatically update when matter.js is bumped.
+ */
+
+import type { ClosureControl, ColorControl, DeviceEnergyManagement, DoorLock, EnergyEvse, FanControl, Identify, KeypadInput, LevelControl, MediaPlayback, ModeBase, ServiceArea, Thermostat, ValveConfigurationAndControl, WaterHeaterManagement, WindowCovering } from '@matter/main/clusters'
+
+import type { MatterCommandHandler } from './types.js'
+
+/**
+ * OnOff cluster handler methods
+ */
+export interface OnOffHandlers {
+  on?: MatterCommandHandler
+  off?: MatterCommandHandler
+  toggle?: MatterCommandHandler
+}
+
+/**
+ * LevelControl cluster handler methods
+ */
+export interface LevelControlHandlers {
+  moveToLevel?: MatterCommandHandler<LevelControl.MoveToLevelRequest>
+  move?: MatterCommandHandler<LevelControl.MoveRequest>
+  step?: MatterCommandHandler<LevelControl.StepRequest>
+  stop?: MatterCommandHandler<LevelControl.StopRequest>
+  moveToLevelWithOnOff?: MatterCommandHandler<LevelControl.MoveToLevelRequest>
+}
+
+/**
+ * ColorControl cluster handler methods
+ *
+ * Note: These use simplified argument types that the behavior passes through,
+ * not the raw matter.js request types. The behavior files transform the matter.js
+ * requests before calling plugin handlers.
+ */
+export interface ColorControlHandlers {
+  moveToColorTemperatureLogic?: MatterCommandHandler<{
+    colorTemperatureMireds: number
+    transitionTime: number
+  }>
+  moveToHueAndSaturationLogic?: MatterCommandHandler<{
+    hue: number
+    saturation: number
+    transitionTime: number
+  }>
+  moveToColorLogic?: MatterCommandHandler<{
+    targetX: number
+    targetY: number
+    transitionTime: number
+  }>
+  moveToHueLogic?: MatterCommandHandler<{
+    targetHue: number
+    direction: ColorControl.Direction
+    transitionTime: number
+    isEnhancedHue: boolean
+  }>
+  moveToSaturationLogic?: MatterCommandHandler<{
+    targetSaturation: number
+    transitionTime: number
+  }>
+  stopAllColorMovement?: MatterCommandHandler
+}
+
+/**
+ * DoorLock cluster handler methods
+ */
+export interface DoorLockHandlers {
+  lockDoor?: MatterCommandHandler<DoorLock.LockDoorRequest>
+  unlockDoor?: MatterCommandHandler<DoorLock.UnlockDoorRequest>
+}
+
+/**
+ * WindowCovering cluster handler methods
+ */
+export interface WindowCoveringHandlers {
+  upOrOpen?: MatterCommandHandler
+  downOrClose?: MatterCommandHandler
+  stopMotion?: MatterCommandHandler
+  goToLiftPercentage?: MatterCommandHandler<WindowCovering.GoToLiftPercentageRequest>
+  goToTiltPercentage?: MatterCommandHandler<WindowCovering.GoToTiltPercentageRequest>
+}
+
+/**
+ * Thermostat cluster handler methods
+ */
+export interface ThermostatHandlers {
+  systemModeChange?: MatterCommandHandler<{ systemMode: number, oldSystemMode: number }>
+  occupiedHeatingSetpointChange?: MatterCommandHandler<{
+    occupiedHeatingSetpoint: number
+    oldOccupiedHeatingSetpoint: number
+  }>
+  occupiedCoolingSetpointChange?: MatterCommandHandler<{
+    occupiedCoolingSetpoint: number
+    oldOccupiedCoolingSetpoint: number
+  }>
+  setpointRaiseLower?: MatterCommandHandler<Thermostat.SetpointRaiseLowerRequest>
+}
+
+/**
+ * FanControl cluster handler methods
+ */
+export interface FanControlHandlers {
+  fanModeChange?: MatterCommandHandler<{
+    fanMode: FanControl.FanMode
+    oldFanMode: FanControl.FanMode
+  }>
+  percentSettingChange?: MatterCommandHandler<{
+    percentSetting: number | null
+    oldPercentSetting: number | null
+  }>
+}
+
+/**
+ * Identify cluster handler methods
+ */
+export interface IdentifyHandlers {
+  identify?: MatterCommandHandler<Identify.IdentifyRequest>
+}
+
+/**
+ * RvcRunMode cluster handler methods
+ */
+export interface RvcRunModeHandlers {
+  changeToMode?: MatterCommandHandler<ModeBase.ChangeToModeRequest>
+}
+
+/**
+ * RvcCleanMode cluster handler methods
+ */
+export interface RvcCleanModeHandlers {
+  changeToMode?: MatterCommandHandler<ModeBase.ChangeToModeRequest>
+}
+
+/**
+ * RvcOperationalState cluster handler methods
+ */
+export interface RvcOperationalStateHandlers {
+  pause?: MatterCommandHandler
+  resume?: MatterCommandHandler
+  goHome?: MatterCommandHandler
+}
+
+/**
+ * ServiceArea cluster handler methods
+ */
+export interface ServiceAreaHandlers {
+  selectAreas?: MatterCommandHandler<ServiceArea.SelectAreasRequest>
+  skipArea?: MatterCommandHandler<ServiceArea.SkipAreaRequest>
+}
+
+/**
+ * ClosureControl cluster handler methods
+ *
+ * `stop` is not available on a closure composed with the Instantaneous
+ * feature - such a closure reaches its target immediately, so the spec has
+ * nothing for Stop to do.
+ */
+export interface ClosureControlHandlers {
+  moveTo?: MatterCommandHandler<ClosureControl.MoveToRequest>
+  stop?: MatterCommandHandler
+}
+
+/**
+ * MediaPlayback cluster handler methods
+ *
+ * The transport controls a player always has. The feature-gated commands
+ * (Rewind and FastForward behind VariableSpeed, Seek behind AdvancedSeek, the
+ * track commands behind AudioTracks/TextTracks) are not routed - a plugin that
+ * composes those features needs to supply its own behavior for them.
+ */
+export interface MediaPlaybackHandlers {
+  play?: MatterCommandHandler
+  pause?: MatterCommandHandler
+  stop?: MatterCommandHandler
+  startOver?: MatterCommandHandler
+  previous?: MatterCommandHandler
+  next?: MatterCommandHandler
+  skipForward?: MatterCommandHandler<MediaPlayback.SkipForwardRequest>
+  skipBackward?: MatterCommandHandler<MediaPlayback.SkipBackwardRequest>
+}
+
+/**
+ * KeypadInput cluster handler methods
+ */
+export interface KeypadInputHandlers {
+  sendKey?: MatterCommandHandler<KeypadInput.SendKeyRequest>
+}
+
+/**
+ * ValveConfigurationAndControl cluster handler methods
+ */
+export interface ValveConfigurationAndControlHandlers {
+  open?: MatterCommandHandler<ValveConfigurationAndControl.OpenRequest>
+  close?: MatterCommandHandler
+}
+
+/**
+ * WaterHeaterMode cluster handler methods
+ */
+export interface WaterHeaterModeHandlers {
+  changeToMode?: MatterCommandHandler<ModeBase.ChangeToModeRequest>
+}
+
+/**
+ * WaterHeaterManagement cluster handler methods
+ */
+export interface WaterHeaterManagementHandlers {
+  boost?: MatterCommandHandler<WaterHeaterManagement.BoostRequest>
+  cancelBoost?: MatterCommandHandler
+}
+
+/**
+ * DeviceEnergyManagement cluster handler methods. Each is optional: one the
+ * plugin leaves out is still answered, by recording the request in the state.
+ */
+export interface DeviceEnergyManagementHandlers {
+  powerAdjustRequest?: MatterCommandHandler<DeviceEnergyManagement.PowerAdjustRequest>
+  cancelPowerAdjustRequest?: MatterCommandHandler
+  pauseRequest?: MatterCommandHandler<DeviceEnergyManagement.PauseRequest>
+  resumeRequest?: MatterCommandHandler
+  startTimeAdjustRequest?: MatterCommandHandler<DeviceEnergyManagement.StartTimeAdjustRequest>
+  modifyForecastRequest?: MatterCommandHandler<DeviceEnergyManagement.ModifyForecastRequest>
+  requestConstraintBasedForecast?: MatterCommandHandler<DeviceEnergyManagement.RequestConstraintBasedForecastRequest>
+  cancelRequest?: MatterCommandHandler
+}
+
+/**
+ * DeviceEnergyManagementMode cluster handler methods
+ */
+export interface DeviceEnergyManagementModeHandlers {
+  changeToMode?: MatterCommandHandler<ModeBase.ChangeToModeRequest>
+}
+
+/**
+ * EnergyEvse (EV charger) cluster handler methods. Each is optional: one the
+ * plugin leaves out is still answered, by recording the command in the state.
+ * There is no getTargets handler - Homebridge answers it with the targets the
+ * last setTargets gave.
+ */
+export interface EnergyEvseHandlers {
+  disable?: MatterCommandHandler
+  enableCharging?: MatterCommandHandler<EnergyEvse.EnableChargingRequest>
+  enableDischarging?: MatterCommandHandler<EnergyEvse.EnableDischargingRequest>
+  startDiagnostics?: MatterCommandHandler
+  setTargets?: MatterCommandHandler<EnergyEvse.SetTargetsRequest>
+  clearTargets?: MatterCommandHandler
+}
+
+/**
+ * EnergyEvseMode cluster handler methods
+ */
+export interface EnergyEvseModeHandlers {
+  changeToMode?: MatterCommandHandler<ModeBase.ChangeToModeRequest>
+}
+
+/**
+ * Maps known cluster names to their typed handler interfaces.
+ *
+ * Plugin developers get autocomplete for handler methods within each cluster.
+ * Handler argument types are derived from matter.js where possible,
+ * so they auto-update when the matter.js dependency is bumped.
+ *
+ * @example
+ * ```typescript
+ * const accessory: MatterAccessory = {
+ *   // ...
+ *   handlers: {
+ *     onOff: {
+ *       on: async () => { await device.turnOn() },
+ *       off: async () => { await device.turnOff() },
+ *     },
+ *     levelControl: {
+ *       moveToLevel: async (args) => {
+ *         // args is typed as LevelControl.MoveToLevelRequest
+ *         await device.setBrightness(args?.level ?? 0)
+ *       },
+ *     },
+ *   },
+ * }
+ * ```
+ */
+export interface ClusterHandlerMap {
+  onOff: OnOffHandlers
+  levelControl: LevelControlHandlers
+  colorControl: ColorControlHandlers
+  doorLock: DoorLockHandlers
+  windowCovering: WindowCoveringHandlers
+  thermostat: ThermostatHandlers
+  fanControl: FanControlHandlers
+  identify: IdentifyHandlers
+  rvcRunMode: RvcRunModeHandlers
+  rvcCleanMode: RvcCleanModeHandlers
+  rvcOperationalState: RvcOperationalStateHandlers
+  serviceArea: ServiceAreaHandlers
+  valveConfigurationAndControl: ValveConfigurationAndControlHandlers
+  closureControl: ClosureControlHandlers
+  mediaPlayback: MediaPlaybackHandlers
+  keypadInput: KeypadInputHandlers
+  waterHeaterMode: WaterHeaterModeHandlers
+  waterHeaterManagement: WaterHeaterManagementHandlers
+  deviceEnergyManagement: DeviceEnergyManagementHandlers
+  deviceEnergyManagementMode: DeviceEnergyManagementModeHandlers
+  energyEvse: EnergyEvseHandlers
+  energyEvseMode: EnergyEvseModeHandlers
+}

@@ -1,6 +1,515 @@
 # Change Log
 
-All notable changes to homebridge will be documented in this file.
+All notable changes to `homebridge` will be documented in this file. This project tries to adhere to [Semantic Versioning](http://semver.org/).
+
+## v2.5.0 (2026-11-01)
+
+### Changes
+
+- fix: guard child bridge shutdown before bridgeService is assigned (#3999) (@SAY-5)
+- perf: reduce plugin discovery filesystem calls (#4000) (@n0rt0nthec4t)
+- perf: index accessory operations (#4003) (@n0rt0nthec4t)
+- perf: remove shell from npm prefix lookup (#4004) (@n0rt0nthec4t)
+- test: restore and enforce type checking (#4005) (@n0rt0nthec4t)
+- feat: expose RVC direct mode change capability (#4001) (@jbwhy)
+- fix: validate stored Matter credentials (#4006) (@n0rt0nthec4t)
+- perf: cache Homebridge package metadata (#4007) (@n0rt0nthec4t)
+- fix: coalesce child bridge port requests (#4008) (@n0rt0nthec4t)
+- fix(matter): report a plugin's manufacturer and model on an external matter accessory
+- fix(matter): keep a restored accessory's owner, so the cache stops losing it on alternate restarts
+- fix(matter): re-arm state monitoring on child bridge start, so the ui keeps showing changes (#3993)
+- chore(deps): dependency updates
+- fix(matter): keep the cluster features a plugin chose when homebridge attaches its handlers
+- fix(matter): restore a cached accessory with the cluster features the plugin composed
+- fix(matter): show a thermostat's temperature when it registers after the bridge is online
+- feat(matter): turn on fan auto mode when a fan declares a sequence that offers it
+- feat(matter): add auto mode to a room air conditioner that starts in auto or declares a deadband
+- feat(matter): let an air quality sensor report every level, not only good and poor
+- feat(matter): add the water heater device type, with mode and boost handlers
+- fix(matter): keep a light's lighting feature on its on/off cluster when handlers are attached
+- docs(matter): say which clusters the media player device type actually carries
+- fix(matter): pass accessory information to the UI (#4019) (@thecloudseeker)
+- fix(matter): keep uniqueId when re-registering a restored accessory (#4020) (@thecloudseeker)
+- fix: read matter.js native fabric storage to report commissioned state (#4021) (@AxelDreemurr)
+- fix(matter): preserve accessory cache on read errors (#4023) (@ethanjnrg)
+- fix(matter): skip malformed accessory cache entries (#4024) (@ethanjnrg)
+- fix(matter): report cache save failures without blocking shutdown (#4025) (@ethanjnrg)
+- fix(matter): fall back to matter.js when a ColorControl handler is missing (#4028) (@cestercian)
+- fix(matter): stop the ui's light commands failing when sent together or without options (#4029)
+- fix(matter): show a newly registered accessory in the ui without a restart (#4013)
+- docs(matter): say a restored accessory needs registering again, and keeps its cached state (#4015)
+- fix(matter): shorten an accessory's over-long name, model or serial and say which (#4016)
+- chore(deps): update matter.js to v0.18.0, with the changes its new checks need
+- feat(api): expose bridge HAP enablement to plugins (#4037) (@n0rt0nthec4t)
+- feat(api): add isMatterExternalsOnly to match isHapExternalsOnly
+- fix(matter): only enable matter for main bridge plugins when the main bridge uses it
+- fix: keep external accessory ports off the ports bridges are configured to use (#4035)
+- fix(matter): resolve register and unregister once the bridge has finished (#4033)
+- fix(matter): give a power source with no battery the wired feature, so it registers
+- fix(matter): build a composed accessory together with its parts
+- feat(matter): add solar, battery, ev charger, meter and tariff device types (#4034)
+- fix: accept a config.json that starts with a UTF-8 BOM (#4039) (@b84330808)
+- chore(docs): regenerate docs for `v2.5.0`
+
+### Homebridge Dependencies
+
+- `@homebridge/hap-nodejs` @ `v2.3.0`
+
+### Matter Dependencies
+
+- `@matter/main` @ `v0.18.0`
+
+## v2.4.0 (2026-08-16)
+
+### Changes
+
+- chore(deps): dependency updates
+- fix(matter): echo the control correlationId so the ui stops retrying successful commands
+- refactor(matter): collapse the three identical rvc operational command handlers into one
+- fix(matter): keep a restored colour light's colour features, so it stops failing on every restart
+- fix(matter): only warn about a cluster the plugin actually supplies handlers for
+- feat(matter): expose the device type requirements, so a plugin can choose its own cluster features
+- feat(matter): send each cluster's feature map to the ui, so it can offer only the controls a device has
+- fix(matter): send the feature map for accessory parts too, not just the accessory
+- fix(matter): keep a whole matter message in the debug log, so a report's value is not cut off (#3958)
+- fix(matter): stop a brightness command failing on a dimmable light by writing the on/off state twice (#3993)
+- fix(matter): keep an accessory's endpoint when a plugin updates it, so state updates keep working
+
+### Homebridge Dependencies
+
+- `@homebridge/hap-nodejs` @ `v2.2.2`
+
+### Matter Dependencies
+
+- `@matter/main` @ `v0.17.9`
+
+## v2.3.1 (2026-08-10)
+
+### Changes
+
+- fix(matter): stop rejecting the bridge's own storage path on windows (#3987)
+
+### Homebridge Dependencies
+
+- `@homebridge/hap-nodejs` @ `v2.2.0`
+
+### Matter Dependencies
+
+- `@matter/main` @ `v0.17.9`
+
+## v2.3.0 (2026-08-08)
+
+### Changes
+
+- feat: make identifying material in bonjour configurable (#3965) (@naterator)
+- fix(matter): compose PowerSource for all device types (#3968) (@zbuc)
+- fix(matter): restore cached accessories into the bridge before going online (#3969) (@keremerkan)
+- feat(matter): expose matter status errors on `api.matter.status`
+- feat(matter): detect thermostat features from the declared setpoints
+- fix(matter): read cluster features from the behavior, not the cluster
+- fix(matter): retry Matter server start on transient storage-lock contention
+- fix(matter): retry parts-list notification on synchronous lock contention
+- fix(matter): reject bridged registrations that arrive before the server is running
+- test(matter): cover cache-restore attach-in-place and pre-online ordering
+- fix(matter): defer bridge online until registrations settle (#3973) (@keremerkan)
+- fix(matter): add FixedLabel and PowerSource to composed parents (#3972) (@keremerkan)
+- feat(matter): expose commissioned fabrics in the child bridge status (#3974)
+- fix(matter): read the fabric vendor id from cluster-shaped fabric entries (#3974)
+- fix(matter): declare ac/dc feature on power measurement (#3977) (@keremerkan)
+- feat(matter): populate bridged accessory firmware version from firmwareRevision (#3976) (@keremerkan)
+- chore(deps): dependency updates
+- chore(deps): bump `@matter/main` to the released v0.17.7
+- feat: Support for NodeJS 26 
+- feat(matter): warn when a thermostat's setpoint limits cannot satisfy its auto-mode deadband
+- fix(matter): advertise the power source device type on endpoints with a battery, per the Matter spec
+- fix(matter): seed a battery's unknown charge state, so a late first report is not rejected (#3982)
+- chore(deps): updated `@matter/main` from `v0.17.6` to `v0.17.9`
+  - [see changelog &rarr;](https://github.com/matter-js/matter.js/blob/main/CHANGELOG.md)
+- feat(matter): expose the closure, media player and speaker device types to plugins
+- fix(matter): expose the clusters and enums the new device types need, so plugins are not left with magic numbers
+- fix(matter): route closure, media playback and keypad commands to plugin handlers
+- fix(matter): give composed parts the same preparation as their parent accessory
+- fix(matter): measure thermostat setpoint limits against the declared absolute limits
+- fix(matter): report zero commissioned fabrics as not commissioned (#3974)
+
+### Homebridge Dependencies
+
+- `@homebridge/hap-nodejs` @ `v2.2.0`
+
+### Matter Dependencies
+
+- `@matter/main` @ `v0.17.9`
+
+## v2.2.1 (2026-07-19)
+
+### Changes
+
+- fix(matter): add electrical clusters to public cluster name map
+- chore(deps): dependency updates
+- docs(matter): document update cadence for electrical measurement clusters
+- docs: regenerate docs for `v2.2.1`
+
+### Homebridge Dependencies
+
+- `@homebridge/hap-nodejs` @ `v2.1.9`
+
+### Matter Dependencies
+
+- `@matter/main` @ `v0.17.6`
+
+## v2.2.0 (2026-07-18)
+
+### Changes
+
+- chore: dependency updates
+  - updated `@matter/main` from `v0.17.4` to `v0.17.6`, [see changelog](https://github.com/matter-js/matter.js/blob/main/CHANGELOG.md)
+- fix(matter): add missing occupancy cluster to motion sensor
+- fix(matter): add missing switch cluster to generic switch
+- fix(matter): add missing smoke/co cluster to smoke sensor
+- fix(matter): add missing pump control cluster to pump
+- fix(matter): add missing thermostat cluster to room ac
+- feat(matter): bump configuration version on bridge changes
+- fix(matter): repair dead bridged device info guard
+- fix(matter): make water valve open/close commands work
+- feat(matter): map valve commands for ui control
+- chore(ci): bump actions/setup-node to v7
+- fix: preserve concurrent accessory registration during cache restore (#3919) (@zerafachris)
+- feat(matter): add electrical power and energy measurement clusters (#3962)
+- feat(matter): add disableIpv4 option for ipv6-only matter mdns
+- fix(matter): ignore unexpected door lock state values
+- fix(matter): coerce bigint values in accessory state updates
+- fix(matter): allocate child bridge matter port from the matter pool
+- docs: regenerate docs for `v2.2.0`
+
+### Homebridge Dependencies
+
+- `@homebridge/hap-nodejs` @ `v2.1.9`
+
+### Matter Dependencies
+
+- `@matter/main` @ `v0.17.6`
+
+## v2.1.1 (2026-07-12)
+
+### Changes
+
+- chore: update `actions/checkout` to `v7`
+- chore: dependency updates
+- fix: keep api shutdown listener attached across child bridge restart
+- fix(cli): unref shutdown fallback timer so process exits promptly
+- fix: clear currentInitializingPlugin once each initializer settles
+- fix: keep npm-prefix lookup quiet when user has noisy npm env vars
+- fix: hoist QR-code error level out of printSetupInfo
+- fix: cap restart attempts on signal-based child bridge exits too
+- fix: use disconnect event instead of polling for parent connection
+- fix: also check bridged accessories for UUID collisions in registerPlatform
+- fix: surface publish errors from bridge.publish and external accessory publish
+- fix(plugin): include exported keys in initializer-not-found error
+- fix: reset child bridge restart cap after a stable run
+- docs: regenerate docs for `v2.1.1`
+
+### Homebridge Dependencies
+
+- `@homebridge/hap-nodejs` @ `v2.1.8`
+
+### Matter Dependencies
+
+- `@matter/main` @ `v0.17.4`
+
+## v2.1.0 (2026-06-04)
+
+### Changes
+
+- chore: add past release deprecation workflow (#3940)
+- fix: normalise main bridge username to uppercase before MAC validation
+- fix(matter): clean up half-started external Matter server on publish failure
+- fix: tolerate missing platforms/accessories arrays in refreshConfig
+- fix: defensively validate activePlugins is an array
+- fix(api): make isMatterEnabled() truthful during plugin initialisation
+- fix(matter): release Matter ports when external accessories unregister or fail
+- fix(matter): use a sentinel error class to detect cross-bridge routing
+- fix: stop concurrent requestMatterAccessories callers stranding each other
+- fix(matter): drop BehaviorRegistry handlers when accessories unregister
+- fix: ack stopMatterMonitoring when there are no active clients
+- fix(matter): strip invalid child bridge Matter configs instead of just logging
+- fix: send fallback error when no Matter bridge has the requested accessory
+- fix(matter): close half-built ServerNode when start() fails after creation
+- feat: persist plugin attribution for external accessories so the UI can show their QR codes
+- fix(matter): echo correlationId on accessoriesData responses
+- fix(matter): serialize fabric/node IDs as strings, not BigInt
+- feat: allow disabling both hap and matter on a bridge
+- feat(matter): support disabling matter in place without tear down
+- fix(matter): set door lock state directly
+- fix(matter): echo correlationId on monitoringStarted/Stopped acks
+- feat: nested hap/matter bridge config with `externalsOnly` mode
+- fix(matter): read the Matter shutdown handler via a getter
+- test: add spec-inclusive typecheck script and fix existing spec errors
+- chore: add test-file lint rules and fix existing violations
+- refactor(matter): delegate log rendering to matter.js
+- chore: dependency updates
+- docs: refresh copilot instruction file (#3949) (@Sev7een)
+
+### Homebridge Dependencies
+
+- `@homebridge/hap-nodejs` @ `v2.1.7`
+
+### Matter Dependencies
+
+- `@matter/main` @ `v0.17.1`
+
+## v2.0.2 (2026-05-09)
+
+### Changes
+
+- feat(matter): log Matter.js version at bridge & child bridge startup
+- chore: dependency updates
+
+### Homebridge Dependencies
+
+- `@homebridge/hap-nodejs` @ `v2.1.6`
+
+## v2.0.1 (2026-05-05)
+
+### Changes
+
+- docs: add `CLAUDE.md` to repo
+- feat: expose `hap` flag on child bridge metadata
+- chore: dependency updates
+- fix: disable hap publishing on child bridges
+- fix: drop legacy request type aliases removed in matter v0.17.x
+- fix: keep accessory listeners attached during teardown
+
+### Homebridge Dependencies
+
+- `@homebridge/hap-nodejs` @ `v2.1.5`
+
+## v2.0.0 (2026-05-04)
+
+### ⚠️ Breaking Changes
+
+- **For Users:**
+  - Before upgrading, you will want to ensure that the plugin(s) you are using are compatible with this new version of Homebridge. If you are unsure, see the link below or open an issue with the developer of your plugin(s) in question.
+  - Node.js v18 and v20 are no longer supported. Homebridge v2 requires Node.js v22 or v24.
+
+- **For Plugin Developers:**
+  - **HAP-NodeJS rename + major upgrade.** The dependency was renamed from `hap-nodejs` to `@homebridge/hap-nodejs` and bumped from `0.14.x` to `2.x`. Plugins importing directly from `hap-nodejs` must update both the package name and adjust to the v2 API. The recommended path is to import HAP types from `homebridge` (which re-exports them) rather than depending on `@homebridge/hap-nodejs` directly.
+  - **ESM-only.** The published package is now ESM (`"type": "module"`). Plugins authored as CommonJS that load `homebridge` via `require()` will not work; use `import` syntax. Plugins must publish ESM (or dual ESM/CJS) builds.
+  - **Output directory renamed `lib/` → `dist/`.** Plugins doing dirty-imports like `homebridge/lib/api` must switch to the public exports (`import { API } from 'homebridge'`).
+  - **`bin/homebridge` → `bin/homebridge.js`.** The bin entry now includes the `.js` extension (ESM requires it). The npm-managed `homebridge` shim is unaffected; only hardcoded paths to the script need updating.
+  - **Legacy deprecation cleanup (#3648).** The following were removed in v2:
+    - Module-level `withPrefix`, `setDebugEnabled`, `setTimestampEnabled`, `forceColor` exports from `homebridge`. Use `Logger.withPrefix(...)`, `Logger.setDebugEnabled(...)`, etc. on the `Logger` class.
+    - `PlatformAccessory.reachable`, `PlatformAccessory.updateReachability`, `PlatformAccessory.getServiceByUUIDAndSubType`, `PlatformAccessory.configureCameraSource`. Use `getServiceById` and standard HAP camera registration patterns.
+    - `API.publishCameraAccessories`. Use `API.publishExternalAccessories` (this is what the deprecated method delegated to internally).
+    - `HomebridgeConfig.mdns` field is no longer forwarded to child bridges and is ignored. Use `bridge.advertiser` instead.
+
+- Please visit the following link to learn more about the changes and how to prepare:
+  - [Updating-To-Homebridge-v2.0](https://github.com/homebridge/homebridge/wiki/Updating-To-Homebridge-v2.0)
+
+### Added
+
+- set debug `-D` setting per child bridge
+- feat: matter implementation
+  - fix: matter fix [1] - matter cache getter (@talrhv)
+  - fix: matter fix [2] - various fixes
+  - fix: matter fix [3] - combined devices
+  - fix: matter fix [4] - general fixes
+  - fix: matter fix [5] - expose `WaterValve` device (#3909) (@donavanbecker)
+  - fix: matter fix [6] - crash when bridge bind is set (#3910) (@gtalusan)
+  - fix: matter fix [7] - fix level control for non-lighting devices
+  - fix: add powerSource to clusterNames and ClusterStateMap (#3912) (@gtalusan)
+  - fix: enable Rechargeable feature for PowerSource cluster when batChargeState is provided (#3914) (@gtalusan)
+  - fix: remove API event listeners in Matter manager teardown (#3915) (@gtalusan)
+  - fix: remove stateChange/commissioning listeners from MatterServer on teardown (#3916) (@gtalusan)
+  - fix: remove duplicate API event listeners from Server (#3917) (@gtalusan)
+  - fix: remove process message listener on IpcService teardown (#3918) (@gtalusan)
+  - fix: bind MdnsService to bridge.bind interface (#3920) (@gtalusan)
+  - fix: matter fix [15] - various enhancements
+  - fix: Add `GenericSwitch` to `api.matter.deviceTypes` (#3923) (@donavanbecker)
+  - refactor(matter): namespace switch helper as api.matter.switch.emit
+
+### Changed
+
+- Address legacy deprecation cleanup (#3648) (@hjdhjd)
+- general code modernisation:
+  - ⚠️ move from `commonjs` to `esm` modules
+  - use lint rules from `@antfu/eslint-config`
+  - migrate from `jest` to `vitest` for testing
+  - ⚠️ drop support for node `v18` and `20`
+- fix(server): wire bridge.hap=false through
+
+### Removed
+
+- ⚠️ remove deprecated `--remove-orphans` flag
+
+### Homebridge Dependencies
+
+- `@homebridge/hap-nodejs` @ `v2.1.4`
+
+## v1.11.4 (2026-03-29)
+
+### Changed
+
+- updated dependencies
+
+### Homebridge Dependencies
+
+- `hap-nodejs` @ `v0.14.3`
+
+## v1.11.3 (2026-03-21)
+
+### Changed
+
+- updated dependencies
+
+### Homebridge Dependencies
+
+- `hap-nodejs` @ `v0.14.2`
+
+## v1.11.2 (2026-02-08)
+
+### Changed
+
+- updated dependencies
+- regenerate docs after `typedoc` update
+- update homebridge v2 info notice with more info
+
+### Homebridge Dependencies
+
+- `hap-nodejs` @ `v0.14.1`
+
+## v1.11.1 (2025-10-29)
+
+### Changed
+
+- updated dependencies
+- add node 24 to node engines in `package.json`
+
+### Homebridge Dependencies
+
+- `hap-nodejs` @ `v0.14.0`
+
+## v1.11.0 (2025-07-13)
+
+### Changes
+
+- return port in `childBridgeStatusUpdate` event response
+- update dependencies, including `jest` to `v30`
+- regenerate docs after `typedoc` update
+
+### Homebridge Dependencies
+
+- `hap-nodejs` @ `v0.13.1`
+
+## v1.10.0 (2025-06-07)
+
+### Changed
+
+- updated dependencies including `hap-nodejs` to `v0.13.1`
+- move v2.0 notice to show just once + node notice
+
+### Homebridge Dependencies
+
+- `hap-nodejs` @ `v0.13.1`
+
+## v1.9.0 (2025-02-11)
+
+### Changed
+
+- Added method updateDisplayName() (#3764) (@justjam2013)
+- Fixed method handleUpdatePlatformAccessories() (#3765) (@justjam2013)
+- Make it possible to set Characteristic.SerialNumber via config.json (#3761) (@vvorcun)
+- fix: check for valid array in `handleUpdatePlatformAccessories`
+- minor dependency updates
+
+### Homebridge Dependencies
+
+- `hap-nodejs` @ `v0.12.3`
+
+## v1.8.5 (2024-10-25)
+
+### Changed
+
+- support plugins with dots in their npm scope (#3687) (@gtalusan)
+- mark compatible with node v22
+- minor dependency updates
+
+### Homebridge Dependencies
+
+- `hap-nodejs` @ `v0.12.3`
+
+## v1.8.4 (2024-07-19)
+
+### Fixed
+
+- Fix default FirmwareRevision (#3644) (@hjdhjd)
+
+### Changed
+
+- Detect config interface on registerPlatform (#3609) (@duddu)
+- Updated dependencies, fix `typedoc` generation
+- Added log messaging about upcoming Homebridge v2.0.0 update
+  - NOTICE TO USERS AND PLUGIN DEVELOPERS
+    - Homebridge v2.0 is on the way and brings some breaking changes to existing plugins.
+    - Please visit the following link to learn more about the changes and how to prepare:
+      - [Updating-To-Homebridge-v2.0](https://github.com/homebridge/homebridge/wiki/Updating-To-Homebridge-v2.0)
+
+### Homebridge Dependencies
+
+- `hap-nodejs` @ `v0.12.2`
+
+## v1.8.3 (2024-06-19)
+
+### Changed
+
+- Updated dependencies (`hap-nodejs`)
+
+### Homebridge Dependencies
+
+- `hap-nodejs` @ `v0.12.2`
+
+## v1.8.2 (2024-05-16)
+
+### Changed
+
+- Updated dependencies (`hap-nodejs`)
+- correct comment for automatically added 'alpha' labels in labeler.yml (#3608) (@techm4te)
+
+### Homebridge Dependencies
+
+- `hap-nodejs` @ `v0.12.1`
+
+## v1.8.1 (2024-04-27)
+
+### Fixed
+
+- shared use of `commander` between homebridge and the UI repo
+
+### Other Changes
+
+- Update Discord Webhook
+
+## v1.8.0 (2024-04-20)
+
+### Added
+
+- allow for FirmwareRevision override in config
+- add GitHub labeler action
+- allow custom `NODE_OPTIONS` and `DEBUG` on child bridges
+- add logging success colour (#3581)
+- adds alpha publisher
+
+### Changed
+
+- improve `README` installation docs
+- updated dependencies
+- updated Discord Webhooks so notifications are seperated for `release` and `pre-release`
+- updated lint rules for imports
+- regenerate docs
+- update hap-nodejs version
+
+### Homebridge Dependencies
+
+- `hap-nodejs` @ `v0.12.0`
 
 ## v1.7.0 (2023-11-04)
 
@@ -12,7 +521,7 @@ All notable changes to homebridge will be documented in this file.
 
 ## v1.6.1 (2023-04-30)
 
-### Bug Fixes 🐛
+### Bug Fixes
 
 - Fixed an issue with the `avahi` advertiser on Synology that resulted in homebridge not starting by @Supereg in https://github.com/homebridge/HAP-NodeJS/pull/1003
 - Resolved an issue where developers weren't able to compile strict TypeScript projects against Homebridge
@@ -51,8 +560,8 @@ All notable changes to homebridge will be documented in this file.
 ### Featured Changes
 
 - Upgraded HAP-NodeJS to [v0.10.2](https://github.com/homebridge/HAP-NodeJS/releases/tag/v0.10.2)
-    - Fix an issue with network interface family detection when running Node.js 18 @oznu [#947](https://github.com/homebridge/HAP-NodeJS/pull/947)
-    - Fixed memory leak with HomeKit DataStreams @Supereg [#943](https://github.com/homebridge/HAP-NodeJS/pull/943)
+  - Fix an issue with network interface family detection when running Node.js 18 @oznu [#947](https://github.com/homebridge/HAP-NodeJS/pull/947)
+  - Fixed memory leak with HomeKit DataStreams @Supereg [#943](https://github.com/homebridge/HAP-NodeJS/pull/943)
 - Strict plugin resolution option added to Homebridge plugin @oznu [#3117](https://github.com/homebridge/homebridge/pull/3117) 
 - Replace https://git.io URLs as the service is [being depreciated](https://github.blog/changelog/2022-04-25-git-io-deprecation/)
 
@@ -72,30 +581,28 @@ This release upgrades various dependencies with bug fixes and security fixes.
 - Fix ES Module loading with absolute path @seydx [#3070](https://github.com/homebridge/homebridge/pull/3070) 
 - Fix casing of generated inline docs @Supereg [#3066](https://github.com/homebridge/homebridge/pull/3066)
 
-## 1.3.9 (2021-12-29)
+## v1.3.9 (2021-12-29)
 
 ### Bug Fixes
 
 - Fixed a crash occurring for any encrypted communication when running Node.js 17 on linux based machines [#3046](https://github.com/homebridge/homebridge/issues/3046)
 
-
-## 1.3.8 (2021-10-22)
+## v1.3.8 (2021-10-22)
 
 ### Featured Changes
 
-- PluginManager would abort plugin loading if one plugin encounters a loading error  [#3017](https://github.com/homebridge/homebridge/issues/3017)
+- PluginManager would abort plugin loading if one plugin encounters a loading error [#3017](https://github.com/homebridge/homebridge/issues/3017)
 
 ### Other Changes
 
 - Move to centrally managed Issue form templates and GitHub Action workflows [#3011](https://github.com/homebridge/homebridge/issues/3011)
 
-
-## 1.3.6 (2021-11-10)
+## v1.3.6 (2021-11-10)
 
 ### Notable changes
 
 - Added support for ESM modules and async plugin initializers [#2915](https://github.com/homebridge/homebridge/issues/2915)
-- Upgraded HAP-NodeJS to [v0.9.7](https://github.com/homebridge/HAP-NodeJS/releases/tag/v0.9.7) providing bug fixes  [#3008](https://github.com/homebridge/homebridge/issues/3008)
+- Upgraded HAP-NodeJS to [v0.9.7](https://github.com/homebridge/HAP-NodeJS/releases/tag/v0.9.7) providing bug fixes [#3008](https://github.com/homebridge/homebridge/issues/3008)
 
 ## v1.3.5 (2021-10-08)
 
@@ -105,8 +612,8 @@ This version adds new services and characteristics introduced with iOS 15.
 
 - `AccessCode` and `NFCAccess` services and corresponding characteristics.
 - Services related to the support of Siri enabled HomeKit devices:
-    - The following services were newly added: `Assistant`, `SiriEndpoint`
-    - The following services received new optional characteristics: `Siri` and `SmartSpeaker`
+  - The following services were newly added: `Assistant`, `SiriEndpoint`
+  - The following services received new optional characteristics: `Siri` and `SmartSpeaker`
 
 ### Bug Fixes
 
@@ -119,8 +626,7 @@ Only users who use the `bonjour` mdns advertiser are impacted by this vulnerabil
 
 ### Bug Fixes
 
-- Fixed a characteristic warning for Cameras or Video Doorbells, which might be emitted on startup under certain conditions.  
-   _This warning had no impact on the functionality of Cameras_.
+- Fixed a characteristic warning for Cameras or Video Doorbells, which might be emitted on startup under certain conditions. _This warning had no impact on the functionality of Cameras_.
 
 ## v1.3.3 (2021-03-10)
 
@@ -185,7 +691,7 @@ Child bridges allow any Homebridge platform or accessory to optionally run as it
 Why you might run a child bridge:
 
 - To isolate plugin code from the main bridge - in this mode the plugin will run in its own child process, preventing it from ever crashing the main bridge if a fatal exception occurs.
-    - If the child bridge process does crash, Homebridge will automatically restart it, without impacting the main bridge or other plugins.
+  - If the child bridge process does crash, Homebridge will automatically restart it, without impacting the main bridge or other plugins.
 - To isolate slow plugins, preventing them from slowing down the main bridge or other plugins.
 - To gain the ability to restart individual accessories after a config change or plugin update without having to restart the main bridge or other plugins. 
 - To gain all the benefits of running multiple instances of Homebridge without the management overhead.
@@ -232,8 +738,7 @@ See https://github.com/homebridge/homebridge/wiki/mDNS-Options for more informat
 - Added support for Characteristics with Additional Authorization, by using [characteristic.setupAdditionalAuthorization](https://developers.homebridge.io/HAP-NodeJS/classes/characteristic.html#setupadditionalauthorization).
 - For a more detailed list, have a look at the release notes of `HAP-NodeJS` [v0.9.0](https://github.com/homebridge/HAP-NodeJS/releases/tag/v0.9.0).
 - Added an [API.versionGreaterOrEqual](https://developers.homebridge.io/homebridge/interfaces/api.html#versiongreaterorequal)
-call to the homebridge API object.  
-  This will from now on replace the float based API `version` number property.
+call to the homebridge API object. This will from now on replace the float based API `version` number property.
 
 ### Compatibility
 
@@ -255,8 +760,7 @@ See https://github.com/homebridge/homebridge/wiki/How-To-Change-Homebridge-Versi
 
 ### Bug Fixes
 
-- Updated HAP-NodeJS to [v0.8.5](https://github.com/homebridge/HAP-NodeJS/releases/tag/v0.8.5) incorporating fixes made to the `ciao` mDNS library.  
-  Refer to the release notes of HAP-NodeJS for more technical details.
+- Updated HAP-NodeJS to [v0.8.5](https://github.com/homebridge/HAP-NodeJS/releases/tag/v0.8.5) incorporating fixes made to the `ciao` mDNS library. Refer to the release notes of HAP-NodeJS for more technical details.
 
 ## v1.2.4 (2020-12-05)
 
@@ -269,10 +773,10 @@ See https://github.com/homebridge/homebridge/wiki/How-To-Change-Homebridge-Versi
 ### Bug Fixes
 
 - Updated the mdns library `ciao` to the latest version
-    - Includes general bug fixes and stability improvements
-    - Improved compatibility with machines running avahi
-    - Fixed handling of updated ip addresses
-    - Fixes for Darwin system running in a VM
+  - Includes general bug fixes and stability improvements
+  - Improved compatibility with machines running avahi
+  - Fixed handling of updated ip addresses
+  - Fixes for Darwin system running in a VM
 
 ## v1.2.2 (2020-09-16)
 
@@ -295,8 +799,7 @@ See https://github.com/homebridge/homebridge/wiki/How-To-Change-Homebridge-Versi
 
 ### Notable Changes
 
-- Updated [HAP-Nodejs](https://github.com/homebridge/HAP-NodeJS) to v0.8.0 (see [HAP-NodeJS release notes](https://github.com/homebridge/HAP-NodeJS/releases/tag/v0.8.0)).  
-This includes the rewritten bonjour/mdns library `ciao`, which improves Accessory discovery on the local network ([#2619](https://github.com/homebridge/homebridge/issues/2619)).
+- Updated [HAP-Nodejs](https://github.com/homebridge/HAP-NodeJS) to v0.8.0 (see [HAP-NodeJS release notes](https://github.com/homebridge/HAP-NodeJS/releases/tag/v0.8.0)). This includes the rewritten bonjour/mdns library `ciao`, which improves Accessory discovery on the local network ([#2619](https://github.com/homebridge/homebridge/issues/2619)).
 - Add ability to type an accessory context using generics ([2664](https://github.com/homebridge/homebridge/pull/2664))
 
 ## v1.1.6 (2020-09-07)
@@ -332,15 +835,14 @@ This includes the rewritten bonjour/mdns library `ciao`, which improves Accessor
 ### Notable Changes
 
 - Bumped API version to `2.6` with the following changes:
-    - AccessoryPlugins and Accessory objects returned by StaticPlatformPlugins can now define the optional 
-        `getControllers` method to configure controllers like the RemoteController or CameraController
+  - AccessoryPlugins and Accessory objects returned by StaticPlatformPlugins can now define the optional `getControllers` method to configure controllers like the RemoteController or CameraController
 - Updated [HAP-Nodejs](https://github.com/homebridge/HAP-NodeJS) to v0.7.3.
-    - Moved to the built-in Node.js crypto library for *chacha20-poly1305- encryption and decryption. This gives a 10x performance boost when doing crypto.
-    - All debuggers are now prefixed with the library name, `HAP-NodeJS:`.
-    - [v0.7.0 Release Notes](https://github.com/homebridge/HAP-NodeJS/releases/tag/v0.7.0)
-    - [v0.7.1 Release Notes](https://github.com/homebridge/HAP-NodeJS/releases/tag/v0.7.1)
-    - [v0.7.2 Release Notes](https://github.com/homebridge/HAP-NodeJS/releases/tag/v0.7.2)
-    - [v0.7.3 Release Notes](https://github.com/homebridge/HAP-NodeJS/releases/tag/v0.7.3)
+  - Moved to the built-in Node.js crypto library for *chacha20-poly1305- encryption and decryption. This gives a 10x performance boost when doing crypto.
+  - All debuggers are now prefixed with the library name, `HAP-NodeJS:`.
+  - [v0.7.0 Release Notes](https://github.com/homebridge/HAP-NodeJS/releases/tag/v0.7.0)
+  - [v0.7.1 Release Notes](https://github.com/homebridge/HAP-NodeJS/releases/tag/v0.7.1)
+  - [v0.7.2 Release Notes](https://github.com/homebridge/HAP-NodeJS/releases/tag/v0.7.2)
+  - [v0.7.3 Release Notes](https://github.com/homebridge/HAP-NodeJS/releases/tag/v0.7.3)
 
 ### Bug Fixes
 
@@ -369,7 +871,7 @@ This includes the rewritten bonjour/mdns library `ciao`, which improves Accessor
 
 - [#2527](https://github.com/homebridge/homebridge/pull/2527) Improve cached accessory resolution.
 - [#2528](https://github.com/homebridge/homebridge/pull/2528) Removing orphaned cached accessories is now the default behavior.
-    - The `-R` flag was deprecated. A new `-K`/`--keep-orphans` flag was introduced to disable this behavior.
+  - The `-R` flag was deprecated. A new `-K`/`--keep-orphans` flag was introduced to disable this behavior.
 
 ## v1.0.1 (2020-04-27)
 
@@ -396,42 +898,42 @@ sudo npm install -g --unsafe-perm homebridge@0.4.53
 
 - [#2476](https://github.com/homebridge/homebridge/pull/2476) - Project converted to Typescript by [@Supereg](https://github.com/Supereg)
 - Homebridge API version was bumped to `2.5` with the following additions:
-    - The signatures of `registerAccessory` and `registerPlatform` have been adjusted. The plugin name, which was passed as the first argument, can now be left out and will be determined automatically by homebridge.
-    - The `PlatformAccessory` class received a new method `configureController` which can be used to access the new Controller API (used for Apple TV Remotes and Cameras) introduced with HAP-NodeJS 0.6.0
-    - Cameras can now be added to the bridge using a `DynamicPlatformPlugin` and the methods `configureCameraSource` or `configureController` of the `PlatformAccessory` (removing the need to create an external accessory)
-    - The hidden service and primary service properties are now properly restored for cached accessories
+  - The signatures of `registerAccessory` and `registerPlatform` have been adjusted. The plugin name, which was passed as the first argument, can now be left out and will be determined automatically by homebridge.
+  - The `PlatformAccessory` class received a new method `configureController` which can be used to access the new Controller API (used for Apple TV Remotes and Cameras) introduced with HAP-NodeJS 0.6.0
+  - Cameras can now be added to the bridge using a `DynamicPlatformPlugin` and the methods `configureCameraSource` or `configureController` of the `PlatformAccessory` (removing the need to create an external accessory)
+  - The hidden service and primary service properties are now properly restored for cached accessories
 - [#2391](https://github.com/homebridge/homebridge/pull/2391) - [HAP-NodeJS](https://github.com/homebridge/HAP-NodeJS) 
 updated to 0.6.0 with some changes highlighted here:
-    - HAP-NodeJS was converted to Typescript as well (thanks to [@hassankhan](https://github.com/hassankhan))
-    - Support for exposing Cameras through a Bridge was added
-    - Support for Apple TV Remotes (with and without Siri Voice transmission) using the new RemoteController API
-    - Introduction of the new CameraController API which improves on the existing API and opens the way for a possible future introduction of an API for HomeKit Secure Video
-    - Introduced new APIs to mark a service as primary service
-    - Added new characteristic property `adminOnlyAccess` to limit certain access rights to the home-owner
-    - Added new services and characteristics for:
-        - HomeKit Routers (`WiFiRouter` and `WiFiSatellite` services)
-        - HomeKit Secure Video (`CameraOperatingMode` and `CameraEventRecordingManagement` services)
-        - `AccessControl` service
-        - `SmartSpeaker` service
-        - `PowerManagement` service
-        - `TransferTransportManagement` service
-    - Updated to HAP Protocol Version 1.1.0:
-        - Support of the HomeKit Data Stream (HDS) protocol (used by Remotes and Secure Video)
-        - Support for Timed Writes and Write Responses
-    - Fixed a bug in the encryption layer, which would sometimes encrypt events in the wrong order causing corrupted responses. 
-        This issue typically affected service which expose their state using 'target' characteristics 
-        and 'current' characteristics like Doors, Locks and Windows.
-    - Improved HAP specification compatibility, while noting the following changes affecting compatibility:
-        - For `/characteristics` `PUT` request the HAP server will return `204 No Content` if all characteristic writes succeeded and `207 Multi-Status` if at least one write failed or when a write-response is delivered.
-        - For `/characteristics` `GET` request the HAP server will return `200 Success` if all characteristic reads  succeeded and `207 Multi-Status` if at least one write failed. 
-        - The HAP server will now return short UUIDs for Apple predefined services and characteristics for the `/accessories` route.
-    - Many, many more bug fixes and improvements.
+  - HAP-NodeJS was converted to Typescript as well (thanks to [@hassankhan](https://github.com/hassankhan))
+  - Support for exposing Cameras through a Bridge was added
+  - Support for Apple TV Remotes (with and without Siri Voice transmission) using the new RemoteController API
+  - Introduction of the new CameraController API which improves on the existing API and opens the way for a possible future introduction of an API for HomeKit Secure Video
+  - Introduced new APIs to mark a service as primary service
+  - Added new characteristic property `adminOnlyAccess` to limit certain access rights to the home-owner
+  - Added new services and characteristics for:
+    - HomeKit Routers (`WiFiRouter` and `WiFiSatellite` services)
+    - HomeKit Secure Video (`CameraOperatingMode` and `CameraEventRecordingManagement` services)
+    - `AccessControl` service
+    - `SmartSpeaker` service
+    - `PowerManagement` service
+    - `TransferTransportManagement` service
+  - Updated to HAP Protocol Version 1.1.0:
+    - Support of the HomeKit Data Stream (HDS) protocol (used by Remotes and Secure Video)
+    - Support for Timed Writes and Write Responses
+  - Fixed a bug in the encryption layer, which would sometimes encrypt events in the wrong order causing corrupted responses. 
+    This issue typically affected service which expose their state using 'target' characteristics 
+    and 'current' characteristics like Doors, Locks and Windows.
+  - Improved HAP specification compatibility, while noting the following changes affecting compatibility:
+    - For `/characteristics` `PUT` request the HAP server will return `204 No Content` if all characteristic writes succeeded and `207 Multi-Status` if at least one write failed or when a write-response is delivered.
+    - For `/characteristics` `GET` request the HAP server will return `200 Success` if all characteristic reads succeeded and `207 Multi-Status` if at least one write failed. 
+    - The HAP server will now return short UUIDs for Apple predefined services and characteristics for the `/accessories` route.
+  - Many, many more bug fixes and improvements.
 
 ### Other Changes
 
 - Homebridge now exports TypeScript types that can be used in the development of plugins.
-    - See the [homebridge-examples](https://github.com/homebridge/homebridge-examples) repo for examples of how to do this.
-    - We also have created a [plugin template](https://github.com/homebridge/homebridge-plugin-template) you can use as a base for your own plugins.
+  - See the [homebridge-examples](https://github.com/homebridge/homebridge-examples) repo for examples of how to do this.
+  - We also have created a [plugin template](https://github.com/homebridge/homebridge-plugin-template) you can use as a base for your own plugins.
 
 ## v0.4.53 (2020-03-18)
 

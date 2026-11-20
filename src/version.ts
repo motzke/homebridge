@@ -1,16 +1,24 @@
-import fs from "fs";
-import path from "path";
+import { readFileSync } from 'node:fs'
+import { dirname, join } from 'node:path'
+import { fileURLToPath } from 'node:url'
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function loadPackageJson(): any {
-  const packageJSONPath = path.join(__dirname, "../package.json");
-  return JSON.parse(fs.readFileSync(packageJSONPath, { encoding: "utf8" }));
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = dirname(__filename)
+
+interface PackageMetadata {
+  version: string
+  engines: {
+    node: string
+  }
 }
 
+const packageJSONPath = join(__dirname, '../package.json')
+const packageMetadata = JSON.parse(readFileSync(packageJSONPath, 'utf8')) as PackageMetadata
+
 export default function getVersion(): string {
-  return loadPackageJson().version;
+  return packageMetadata.version
 }
 
 export function getRequiredNodeVersion(): string {
-  return loadPackageJson().engines.node;
+  return packageMetadata.engines.node
 }

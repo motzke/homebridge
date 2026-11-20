@@ -1,0 +1,113 @@
+/**
+ * Cluster Behavior Map
+ *
+ * Single authoritative mapping from cluster names to custom Homebridge behavior classes.
+ * Consolidates the duplicate maps that existed in server.ts and serverHelpers.ts.
+ */
+
+import type { Behavior } from '@matter/node'
+
+import {
+  HomebridgeAirQualityServer,
+  HomebridgeCarbonMonoxideConcentrationMeasurementServer,
+  HomebridgeClosureControlServer,
+  HomebridgeColorControlServer,
+  HomebridgeDeviceEnergyManagementModeServer,
+  HomebridgeDeviceEnergyManagementServer,
+  HomebridgeDoorLockServer,
+  HomebridgeEnergyEvseModeServer,
+  HomebridgeEnergyEvseServer,
+  HomebridgeFanControlServer,
+  HomebridgeIdentifyServer,
+  HomebridgeKeypadInputServer,
+  HomebridgeLevelControlServer,
+  HomebridgeMediaPlaybackServer,
+  HomebridgeNitrogenDioxideConcentrationMeasurementServer,
+  HomebridgeOnOffServer,
+  HomebridgeOzoneConcentrationMeasurementServer,
+  HomebridgePm10ConcentrationMeasurementServer,
+  HomebridgePm25ConcentrationMeasurementServer,
+  HomebridgeRvcCleanModeServer,
+  HomebridgeRvcOperationalStateServer,
+  HomebridgeRvcRunModeServer,
+  HomebridgeServiceAreaServer,
+  HomebridgeThermostatServer,
+  HomebridgeValveConfigurationAndControlServer,
+  HomebridgeWaterHeaterManagementServer,
+  HomebridgeWaterHeaterModeServer,
+  HomebridgeWindowCoveringServer,
+} from '../behaviors/index.js'
+
+type BehaviorType = Behavior.Type
+
+/**
+ * Maps cluster names to custom Homebridge behavior classes.
+ *
+ * The "core" map contains only clusters with user-triggered commands that need
+ * custom behaviors (used by server.ts for the CLUSTER_BEHAVIOR_MAP).
+ *
+ * The "full" map adds sensor/measurement clusters that don't have user commands
+ * but still need custom behaviors for state management.
+ */
+export const CORE_CLUSTER_BEHAVIOR_MAP: Record<string, BehaviorType> = {
+  // Core controls
+  onOff: HomebridgeOnOffServer,
+  levelControl: HomebridgeLevelControlServer,
+  colorControl: HomebridgeColorControlServer,
+
+  // Coverings, closures & locks
+  windowCovering: HomebridgeWindowCoveringServer,
+  closureControl: HomebridgeClosureControlServer,
+  doorLock: HomebridgeDoorLockServer,
+
+  // Media players & speakers
+  mediaPlayback: HomebridgeMediaPlaybackServer,
+  keypadInput: HomebridgeKeypadInputServer,
+
+  // Climate control
+  fanControl: HomebridgeFanControlServer,
+  thermostat: HomebridgeThermostatServer,
+
+  // Robotic vacuum cleaners
+  rvcOperationalState: HomebridgeRvcOperationalStateServer,
+  rvcRunMode: HomebridgeRvcRunModeServer,
+  rvcCleanMode: HomebridgeRvcCleanModeServer,
+  serviceArea: HomebridgeServiceAreaServer,
+
+  // Identification
+  identify: HomebridgeIdentifyServer,
+
+  // Valve
+  valveConfigurationAndControl: HomebridgeValveConfigurationAndControlServer,
+
+  // Water heater
+  waterHeaterMode: HomebridgeWaterHeaterModeServer,
+  waterHeaterManagement: HomebridgeWaterHeaterManagementServer,
+
+  // Energy management and EV chargers
+  deviceEnergyManagement: HomebridgeDeviceEnergyManagementServer,
+  deviceEnergyManagementMode: HomebridgeDeviceEnergyManagementModeServer,
+  energyEvse: HomebridgeEnergyEvseServer,
+  energyEvseMode: HomebridgeEnergyEvseModeServer,
+} as const
+
+/**
+ * Full cluster behavior map including sensor/measurement behaviors.
+ *
+ * ⚠️ Nothing consumes this. Every entry below is a no-op subclass that only calls
+ * `super.initialize()`, so attaching them would change no behaviour - the base
+ * matter.js servers the device type already carries do the work. Kept for now
+ * because the classes are exported API; see STATE_ONLY_CLUSTERS above for how the
+ * behavior builder handles these clusters instead.
+ */
+export const FULL_CLUSTER_BEHAVIOR_MAP: Record<string, BehaviorType> = {
+  ...CORE_CLUSTER_BEHAVIOR_MAP,
+
+  // Air quality & concentration measurement sensors
+  airQuality: HomebridgeAirQualityServer,
+  carbonMonoxideConcentrationMeasurement: HomebridgeCarbonMonoxideConcentrationMeasurementServer,
+  nitrogenDioxideConcentrationMeasurement: HomebridgeNitrogenDioxideConcentrationMeasurementServer,
+  ozoneConcentrationMeasurement: HomebridgeOzoneConcentrationMeasurementServer,
+  pm10ConcentrationMeasurement: HomebridgePm10ConcentrationMeasurementServer,
+  pm25ConcentrationMeasurement: HomebridgePm25ConcentrationMeasurementServer,
+} as const

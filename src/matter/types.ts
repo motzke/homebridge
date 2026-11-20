@@ -1,0 +1,1088 @@
+/**
+ * Matter Types for Homebridge Plugin API
+ *
+ * This module provides types and interfaces for plugin developers
+ * to create Matter-compatible accessories.
+ */
+
+import type { Endpoint, EndpointType } from '@matter/main'
+import type { Behavior } from '@matter/node'
+
+import type { UnknownContext } from '../platformAccessory.js'
+import type { ClusterHandlerMap } from './clusterHandlerMap.js'
+import type { ClusterStateMap } from './clusterStateMap.js'
+
+import { EventEmitter } from 'node:events'
+
+/**
+ * Optimized Matter.js Device and Cluster Imports
+ *
+ * Imports Matter.js devices and clusters from individual files instead of barrel exports,
+ * which dramatically reduces startup time.
+ *
+ * Why this matters:
+ * - Barrel import: `import * as devices from '@matter/main/devices'` loads ALL 186+ exports (~800ms)
+ * - Individual imports: Only loads the 27 devices we actually use (~50-100ms)
+ * - Result: 50-100x faster on powerful machines, even more improvement on Raspberry Pi
+ *
+ * This optimization is especially important for users on resource-constrained devices like
+ * Raspberry Pi where the difference can be several minutes of startup time.
+ */
+// Direct imports from individual cluster files
+import { AirQuality } from '@matter/main/clusters/air-quality'
+import { BooleanState } from '@matter/main/clusters/boolean-state'
+import { CarbonMonoxideConcentrationMeasurement } from '@matter/main/clusters/carbon-monoxide-concentration-measurement'
+import { ClosureControl } from '@matter/main/clusters/closure-control'
+import { ColorControl } from '@matter/main/clusters/color-control'
+import { DeviceEnergyManagement } from '@matter/main/clusters/device-energy-management'
+import { DoorLock } from '@matter/main/clusters/door-lock'
+import { ElectricalEnergyMeasurement } from '@matter/main/clusters/electrical-energy-measurement'
+import { ElectricalPowerMeasurement } from '@matter/main/clusters/electrical-power-measurement'
+import { EnergyEvse } from '@matter/main/clusters/energy-evse'
+import { FanControl } from '@matter/main/clusters/fan-control'
+import { KeypadInput } from '@matter/main/clusters/keypad-input'
+import { LevelControl } from '@matter/main/clusters/level-control'
+import { MediaPlayback } from '@matter/main/clusters/media-playback'
+import { NitrogenDioxideConcentrationMeasurement } from '@matter/main/clusters/nitrogen-dioxide-concentration-measurement'
+import { OnOff } from '@matter/main/clusters/on-off'
+import { OzoneConcentrationMeasurement } from '@matter/main/clusters/ozone-concentration-measurement'
+import { Pm10ConcentrationMeasurement } from '@matter/main/clusters/pm10-concentration-measurement'
+import { Pm25ConcentrationMeasurement } from '@matter/main/clusters/pm25-concentration-measurement'
+import { PowerTopology } from '@matter/main/clusters/power-topology'
+import { RvcOperationalState } from '@matter/main/clusters/rvc-operational-state'
+import { Thermostat } from '@matter/main/clusters/thermostat'
+import { ValveConfigurationAndControl } from '@matter/main/clusters/valve-configuration-and-control'
+import { WindowCovering } from '@matter/main/clusters/window-covering'
+// Direct imports from individual device files
+import { AirQualitySensorDevice, AirQualitySensorRequirements } from '@matter/main/devices/air-quality-sensor'
+import { BasicVideoPlayerDevice } from '@matter/main/devices/basic-video-player'
+import { BatteryStorageDevice } from '@matter/main/devices/battery-storage'
+import { ClosureDevice, ClosureRequirements } from '@matter/main/devices/closure'
+import { ColorTemperatureLightDevice } from '@matter/main/devices/color-temperature-light'
+import { ContactSensorDevice } from '@matter/main/devices/contact-sensor'
+import { DimmableLightDevice } from '@matter/main/devices/dimmable-light'
+import { DimmablePlugInUnitDevice } from '@matter/main/devices/dimmable-plug-in-unit'
+import { DoorLockDevice } from '@matter/main/devices/door-lock'
+import { ElectricalEnergyTariffDevice, ElectricalEnergyTariffRequirements } from '@matter/main/devices/electrical-energy-tariff'
+import { ElectricalMeterDevice, ElectricalMeterRequirements } from '@matter/main/devices/electrical-meter'
+import { ElectricalUtilityMeterDevice, ElectricalUtilityMeterRequirements } from '@matter/main/devices/electrical-utility-meter'
+import { EnergyEvseDevice, EnergyEvseRequirements } from '@matter/main/devices/energy-evse'
+import { ExtendedColorLightDevice } from '@matter/main/devices/extended-color-light'
+import { FanDevice } from '@matter/main/devices/fan'
+import { GenericSwitchDevice, GenericSwitchRequirements } from '@matter/main/devices/generic-switch'
+import { HumiditySensorDevice } from '@matter/main/devices/humidity-sensor'
+import { LightSensorDevice } from '@matter/main/devices/light-sensor'
+import { OccupancySensorDevice, OccupancySensorRequirements } from '@matter/main/devices/occupancy-sensor'
+import { OnOffLightDevice } from '@matter/main/devices/on-off-light'
+import { OnOffLightSwitchDevice } from '@matter/main/devices/on-off-light-switch'
+import { OnOffPlugInUnitDevice } from '@matter/main/devices/on-off-plug-in-unit'
+import { PumpDevice, PumpRequirements } from '@matter/main/devices/pump'
+import { RoboticVacuumCleanerDevice, RoboticVacuumCleanerRequirements } from '@matter/main/devices/robotic-vacuum-cleaner'
+import { RoomAirConditionerDevice, RoomAirConditionerRequirements } from '@matter/main/devices/room-air-conditioner'
+import { SmokeCoAlarmDevice, SmokeCoAlarmRequirements } from '@matter/main/devices/smoke-co-alarm'
+import { SolarPowerDevice } from '@matter/main/devices/solar-power'
+import { SpeakerDevice } from '@matter/main/devices/speaker'
+import { TemperatureSensorDevice } from '@matter/main/devices/temperature-sensor'
+import { ThermostatDevice, ThermostatRequirements } from '@matter/main/devices/thermostat'
+import { WaterHeaterDevice, WaterHeaterRequirements } from '@matter/main/devices/water-heater'
+import { WaterLeakDetectorDevice } from '@matter/main/devices/water-leak-detector'
+import { WaterValveDevice, WaterValveRequirements } from '@matter/main/devices/water-valve'
+import { WindowCoveringDevice, WindowCoveringRequirements } from '@matter/main/devices/window-covering'
+import { BridgedNodeEndpoint } from '@matter/main/endpoints/bridged-node'
+import { DeviceEnergyManagementEndpoint, DeviceEnergyManagementRequirements } from '@matter/main/endpoints/device-energy-management'
+import { ElectricalSensorEndpoint, ElectricalSensorRequirements } from '@matter/main/endpoints/electrical-sensor'
+import { PowerSourceEndpoint, PowerSourceRequirements } from '@matter/main/endpoints/power-source'
+
+import { DefaultClosureControlServer } from './behaviors/ClosureControlBehavior.js'
+import { DefaultDeviceEnergyManagementServer } from './behaviors/DeviceEnergyManagementBehavior.js'
+import { DefaultEnergyEvseServer } from './behaviors/EnergyEvseBehavior.js'
+import { DefaultKeypadInputServer } from './behaviors/KeypadInputBehavior.js'
+import { DefaultMediaPlaybackServer } from './behaviors/MediaPlaybackBehavior.js'
+import { DefaultValveConfigurationAndControlServer } from './behaviors/ValveConfigurationAndControlBehavior.js'
+import { DefaultWaterHeaterManagementServer } from './behaviors/WaterHeaterBehavior.js'
+
+type BehaviorType = Behavior.Type
+
+// Re-export Matter.js types for plugin use
+export type { EndpointType }
+
+/**
+ * Optional Matter cluster features a plugin can explicitly advertise.
+ *
+ * Features are capabilities, not cluster state. Only enable a feature when the
+ * physical device and the plugin handler implement the corresponding behavior.
+ */
+export interface MatterAccessoryFeatures {
+  rvcCleanMode?: {
+    /** Allow clean-mode changes while the RVC is not idle. */
+    directModeChange?: boolean
+  }
+}
+
+/**
+ * Handler context information
+ * Provides information about which part of a composed device triggered the handler
+ */
+export interface MatterHandlerContext {
+  /** Parent accessory UUID */
+  uuid: string
+
+  /** Part ID if this handler was triggered from a part, undefined for main accessory */
+  partId?: string
+}
+
+/**
+ * Matter command handler function type
+ *
+ * Handlers can be synchronous or asynchronous (returning a Promise).
+ * The args parameter contains the command arguments passed by Matter.js (optional).
+ * The context parameter provides information about which part triggered the handler (for composed devices).
+ */
+export type MatterCommandHandler<TArgs = unknown> = (args: TArgs, context?: MatterHandlerContext) => Promise<void> | void
+
+/**
+ * Matter cluster handlers interface
+ *
+ * Maps command names to their handler functions.
+ * Each command can have custom argument types.
+ *
+ * Note: Uses `any` instead of `unknown` to allow handlers to specify
+ * their own argument types without TypeScript variance errors.
+ * Handlers can still be strongly typed in their implementations.
+ */
+export interface MatterClusterHandlers {
+  [commandName: string]: MatterCommandHandler<any>
+}
+
+/**
+ * Matter Accessory Part - Sub-device in a composed accessory
+ *
+ * Represents a child endpoint in a composed device (e.g., individual outlets in a power strip).
+ * Parts are added as child endpoints to the main accessory.
+ */
+export interface MatterAccessoryPart {
+  /** Unique identifier for this part within the accessory (e.g., 'outlet-1', 'light', 'shade') */
+  id: string
+
+  /** Display name for this part (optional, defaults to parent's name + part id) */
+  displayName?: string
+
+  /** Matter device type for this part */
+  deviceType: EndpointType
+
+  /** Optional Matter cluster features implemented by this endpoint. */
+  features?: MatterAccessoryFeatures
+
+  /**
+   * Initial cluster states for this part
+   * Same format as `MatterAccessory.clusters`
+   *
+   * Known clusters get full autocomplete; unknown clusters use the fallback type.
+   */
+  clusters: {
+    [K in keyof ClusterStateMap]?: Partial<ClusterStateMap[K]>
+  } & {
+    [clusterName: string]: Record<string, unknown>
+  }
+
+  /**
+   * Handlers for this part's commands
+   * Handlers receive context.partId to identify which part was triggered
+   *
+   * Known clusters get full autocomplete; unknown clusters use the fallback type.
+   */
+  handlers?: {
+    [K in keyof ClusterHandlerMap]?: Partial<ClusterHandlerMap[K]>
+  } & {
+    [clusterName: string]: MatterClusterHandlers
+  }
+}
+
+/**
+ * Matter Accessory - Plugin API Interface
+ *
+ * This is the main interface that plugin developers use to register
+ * Matter accessories with Homebridge.
+ *
+ * For composed devices (devices with multiple subcomponents), use the `parts` array
+ * to define child endpoints. Each part appears as a separate device in the Home app.
+ */
+export interface MatterAccessory<T extends UnknownContext = UnknownContext> {
+  /** Unique identifier for this accessory (must be unique across all accessories) */
+  UUID: string
+
+  /** Display name for the accessory */
+  displayName: string
+
+  /** Matter device type (e.g., OnOffLightDevice, DimmableLightDevice, etc.) */
+  deviceType: EndpointType
+
+  /** Optional Matter cluster features implemented by this endpoint. */
+  features?: MatterAccessoryFeatures
+
+  /** Serial number for the device */
+  serialNumber: string
+
+  /** Manufacturer name */
+  manufacturer: string
+
+  /** Model name/identifier */
+  model: string
+
+  /** Firmware revision (optional) */
+  firmwareRevision?: string
+
+  /** Hardware revision (optional) */
+  hardwareRevision?: string
+
+  /** Software version (optional) */
+  softwareVersion?: string
+
+  /**
+   * Plugin developer storage - persists across restarts
+   * This is a way for plugin developers to store custom data with their accessory
+   * Similar to `PlatformAccessory.context` for HAP accessories
+   */
+  context: T
+
+  /**
+   * Initial cluster states
+   * Key is the cluster name, value is an object of attribute name -> value
+   *
+   * Known clusters (onOff, levelControl, colorControl, etc.) provide full autocomplete.
+   * Unknown clusters are still supported with the fallback `Record<string, unknown>` type.
+   *
+   * @example
+   * ```typescript
+   * clusters: {
+   *   onOff: { onOff: true },
+   *   levelControl: { currentLevel: 127, minLevel: 1, maxLevel: 254 },
+   * }
+   * ```
+   *
+   * Note: If using `parts`, this is optional (main accessory may only be a container)
+   */
+  clusters?: {
+    [K in keyof ClusterStateMap]?: Partial<ClusterStateMap[K]>
+  } & {
+    [clusterName: string]: Record<string, unknown>
+  }
+
+  /**
+   * Handlers for Matter commands (Home app -> Device)
+   *
+   * These handlers are called when a user controls the accessory via the Home app.
+   * Use handlers to send commands to your actual device (cloud API, local network, etc.).
+   *
+   * Known clusters (onOff, levelControl, colorControl, etc.) provide full autocomplete
+   * for handler method names and argument types.
+   *
+   * @example
+   * ```typescript
+   * handlers: {
+   *   onOff: {
+   *     on: async () => { await device.turnOn() },
+   *     off: async () => { await device.turnOff() },
+   *   },
+   *   levelControl: {
+   *     moveToLevel: async (args) => {
+   *       // args is typed as LevelControl.MoveToLevelRequest
+   *       await device.setBrightness(args?.level ?? 0)
+   *     },
+   *   },
+   * }
+   * ```
+   */
+  handlers?: {
+    [K in keyof ClusterHandlerMap]?: Partial<ClusterHandlerMap[K]>
+  } & {
+    [clusterName: string]: MatterClusterHandlers
+  }
+
+  /**
+   * Optional: Get current state handler
+   * Called when a Matter controller reads an attribute
+   * If not provided, the last set value is returned
+   *
+   * @param cluster - Cluster name (e.g., 'onOff', 'levelControl')
+   * @param attribute - Attribute name to read
+   * @returns Current value of the attribute
+   */
+  getState?: (cluster: string, attribute: string) => Promise<unknown> | unknown
+
+  /**
+   * Optional: Array of child endpoints (parts) for composed devices
+   *
+   * Use this to create devices with multiple independent subcomponents, such as:
+   * - Power strip with multiple outlets
+   * - Window covering with shade + light
+   * - Multi-zone thermostat or speaker system
+   *
+   * Each part appears as a separate device in the Home app and can be controlled independently.
+   *
+   * Example:
+   * ```typescript
+   * parts: [
+   *   {
+   *     id: 'outlet-1',
+   *     displayName: 'Outlet 1',
+   *     deviceType: api.matter!.deviceTypes.OnOffOutlet,
+   *     clusters: { onOff: { onOff: false } },
+   *     handlers: {
+   *       onOff: {
+   *         on: async (args, context) => {
+   *           console.log(`Part ${context.partId} turned on`)
+   *           await controlOutlet(1, true)
+   *         }
+   *       }
+   *     }
+   *   },
+   *   // ... more outlets
+   * ]
+   * ```
+   */
+  parts?: MatterAccessoryPart[]
+
+  /**
+   * Event emitter for accessory lifecycle events.
+   *
+   * **Only available for external accessories** published via `api.matter?.publishExternalAccessories()`.
+   * This property is `undefined` for accessories registered via `api.matter?.registerPlatformAccessories()`.
+   *
+   * The event emitter is created automatically when the accessory is published and allows
+   * plugins to listen for the 'ready' event (fired when the Matter server starts).
+   *
+   * **HAP Equivalent:** Similar to accessing events on `PlatformAccessory._associatedHAPAccessory`
+   *
+   * @example
+   * ```typescript
+   * const accessory: MatterAccessory = { ... };
+   * api.matter?.publishExternalAccessories('plugin', [accessory]);
+   *
+   * // Listen for when the accessory is ready on the network
+   * accessory._eventEmitter?.on(MatterAccessoryEventTypes.READY, (port) => {
+   *   console.log(`Accessory ready on port ${port}`);
+   *   // Safe to start device integration, polling, webhooks, etc.
+   * });
+   * ```
+   *
+   * @see MatterAccessoryEventTypes for available events
+   */
+  _eventEmitter?: MatterAccessoryEventEmitter
+}
+
+/**
+ * Matter Configuration (for bridge or child bridge)
+ */
+export interface MatterConfig extends Record<string, unknown> {
+  /** Port for Matter server (optional, will auto-assign if not specified) */
+  port?: number
+
+  /** Name for the Matter bridge (optional) */
+  name?: string
+
+  /**
+   * When `false`, Matter is configured but not advertised — the config block
+   * and the on-disk commissioning storage are preserved, so it can be
+   * re-enabled without re-commissioning. Missing/`true` means enabled. This
+   * mirrors how `bridge.hap.enabled: false` disables HAP without losing pairing data.
+   */
+  enabled?: boolean
+
+  /**
+   * When `true`, the Matter bridge node itself is NOT advertised, but plugins
+   * MAY still publish external Matter accessories (each gets its own pairing
+   * via `api.matter.publishExternalAccessories`). The Matter API surface
+   * (`api.matter`) is still made available to plugins; only the bridge
+   * aggregator is suppressed.
+   *
+   * Intended to be paired with `enabled: false`; if `externalsOnly: true` is
+   * set on its own, validation warns and normalises `enabled` to `false`
+   * rather than rejecting the config. Mirrors the behaviour of
+   * `bridge.hap.externalsOnly`.
+   */
+  externalsOnly?: boolean
+
+  /**
+   * When `true`, matter.js mDNS runs IPv6-only — no IPv4 sockets are opened
+   * on port 5353. The Matter spec requires IPv6; IPv4 discovery is optional.
+   *
+   * Useful when Matter's own mDNS responder competes with avahi-daemon for
+   * IPv4 port 5353 on the same host (symptom: `<hostname>.local` stops
+   * resolving over IPv4 while direct IP access still works). Missing or
+   * `false` keeps matter.js's default dual-stack behaviour.
+   */
+  disableIpv4?: boolean
+}
+
+// Note: the canonical MatterServerEvents declaration is at the bottom of this file.
+// A second declaration here is unnecessary; TypeScript would merge it silently and
+// the comment ("Currently empty - all events removed") was misleading because the
+// file's other declaration adds two events.
+
+/**
+ * Matter Accessory Event Types
+ *
+ * Events that can be emitted by Matter accessories during their lifecycle.
+ *
+ * @example
+ * ```typescript
+ * Listen for when a Matter accessory is ready
+ * const accessory: MatterAccessory = { ... };
+ * api.matter?.publishExternalAccessories('plugin-name', [accessory]);
+ *
+ * const internal = accessory as any;
+ * internal._eventEmitter?.on(MatterAccessoryEventTypes.READY, (port: number) => {
+ *   console.log(`Accessory ready on port ${port}`);
+ * });
+ * ```
+ *
+ * @group Matter Accessory
+ */
+export enum MatterAccessoryEventTypes {
+  /**
+   * Emitted when the Matter server is ready and the accessory is available on the network.
+   * This is the main event to listen for to know when an external accessory is ready.
+   *
+   * **HAP Equivalent:** `AccessoryEventTypes.ADVERTISED`
+   *
+   * @param port - The port number the Matter server is listening on
+   */
+  READY = 'ready',
+}
+
+/**
+ * Matter Accessory Event Emitter Interface
+ *
+ * Defines the typed event emitter interface for Matter accessories.
+ * This interface extends Node's EventEmitter to provide type-safe event handling
+ * for Matter accessory lifecycle events.
+ *
+ * **Usage Pattern:**
+ * ```typescript
+ * const accessory: MatterAccessory = { ... };
+ * api.matter?.publishExternalAccessories('plugin-name', [accessory]);
+ *
+ * Access the event emitter (note: created during registration)
+ * const internal = accessory as InternalMatterAccessory;
+ * internal._eventEmitter?.on(MatterAccessoryEventTypes.READY, (port: number) => {
+ *   console.log(`Accessory ready on port ${port}`);
+ * });
+ * ```
+ *
+ * @group Matter Accessory
+ */
+export interface MatterAccessoryEventEmitter extends EventEmitter {
+  /** Register listener for 'ready' event (fired when accessory is available on network) */
+  on: (event: 'ready', listener: (port: number) => void) => this
+
+  /** Emit 'ready' event */
+  emit: (event: 'ready', port: number) => boolean
+}
+
+/**
+ * Internal representation of a part endpoint
+ */
+export interface InternalMatterAccessoryPart extends MatterAccessoryPart {
+  /** Matter.js endpoint instance for this part */
+  endpoint?: Endpoint
+}
+
+/**
+ * Internal Matter accessory representation
+ * (Used internally by MatterServer)
+ *
+ * @internal
+ */
+export interface InternalMatterAccessory extends MatterAccessory {
+  /** Plugin identifier (set when registered) */
+  _associatedPlugin?: string
+
+  /**
+   * True while this accessory was rebuilt from the accessory cache at startup
+   * and its plugin has not re-registered yet. The plugin's registration
+   * attaches handlers to the existing endpoint instead of erroring.
+   */
+  _restoredFromCache?: boolean
+
+  /** Platform name (set when registered) */
+  _associatedPlatform?: string
+
+  /** Matter.js endpoint instance */
+  endpoint?: Endpoint
+
+  /** Whether this accessory is currently registered */
+  registered: boolean
+
+  /** Internal part endpoints (if using parts) */
+  _parts?: InternalMatterAccessoryPart[]
+
+  // Note: _eventEmitter is now inherited from MatterAccessory (available on public interface)
+}
+
+/**
+ * Matter error type enum (for error handler categorization)
+ */
+// Internal Matter error class hierarchy lives in `./MatterError.ts` so the
+// lightweight `ChildBridgeMatterMessageHandler` can `instanceof`-check the
+// routing sentinel without transitively loading this file's heavy
+// `@matter/*` runtime imports. Re-exported here so all existing consumers
+// importing from `./types.js` keep working.
+export {
+  MatterAccessoryNotOnBridgeError,
+  MatterCommissioningError,
+  MatterDeviceError,
+  MatterError,
+  type MatterErrorDetails,
+  MatterErrorType,
+  MatterNetworkError,
+  MatterStorageError,
+} from './MatterError.js'
+
+/**
+ * Matter device types
+ *
+ * All supported Matter device types, imported from individual files for optimal performance.
+ */
+const devices = {
+  AirQualitySensorDevice,
+  AirQualitySensorRequirements,
+  ColorTemperatureLightDevice,
+  ContactSensorDevice,
+  DimmableLightDevice,
+  DimmablePlugInUnitDevice,
+  DoorLockDevice,
+  ElectricalSensorEndpoint,
+  ElectricalSensorRequirements,
+  ExtendedColorLightDevice,
+  FanDevice,
+  GenericSwitchDevice,
+  GenericSwitchRequirements,
+  HumiditySensorDevice,
+  LightSensorDevice,
+  OccupancySensorDevice,
+  OccupancySensorRequirements,
+  OnOffLightDevice,
+  OnOffLightSwitchDevice,
+  OnOffPlugInUnitDevice,
+  PumpDevice,
+  PumpRequirements,
+  RoboticVacuumCleanerDevice,
+  RoboticVacuumCleanerRequirements,
+  RoomAirConditionerDevice,
+  RoomAirConditionerRequirements,
+  SmokeCoAlarmDevice,
+  SmokeCoAlarmRequirements,
+  TemperatureSensorDevice,
+  ThermostatDevice,
+  ThermostatRequirements,
+  WaterLeakDetectorDevice,
+  SpeakerDevice,
+  WaterHeaterDevice,
+  WaterHeaterRequirements,
+  WaterValveDevice,
+  WaterValveRequirements,
+  WindowCoveringDevice,
+  WindowCoveringRequirements,
+  BasicVideoPlayerDevice,
+  ClosureDevice,
+  ClosureRequirements,
+  SolarPowerDevice,
+  BatteryStorageDevice,
+  EnergyEvseDevice,
+  EnergyEvseRequirements,
+  ElectricalMeterDevice,
+  ElectricalMeterRequirements,
+  ElectricalUtilityMeterDevice,
+  ElectricalUtilityMeterRequirements,
+  ElectricalEnergyTariffDevice,
+  ElectricalEnergyTariffRequirements,
+  PowerSourceEndpoint,
+  PowerSourceRequirements,
+  DeviceEnergyManagementEndpoint,
+  DeviceEnergyManagementRequirements,
+}
+
+/**
+ * Matter cluster types
+ *
+ * All supported Matter cluster types, imported from individual files for optimal performance.
+ */
+const clusters = {
+  AirQuality,
+  BooleanState,
+  CarbonMonoxideConcentrationMeasurement,
+  ClosureControl,
+  ColorControl,
+  DeviceEnergyManagement,
+  DoorLock,
+  ElectricalEnergyMeasurement,
+  ElectricalPowerMeasurement,
+  EnergyEvse,
+  FanControl,
+  KeypadInput,
+  LevelControl,
+  MediaPlayback,
+  NitrogenDioxideConcentrationMeasurement,
+  OnOff,
+  OzoneConcentrationMeasurement,
+  Pm10ConcentrationMeasurement,
+  Pm25ConcentrationMeasurement,
+  PowerTopology,
+  RvcOperationalState,
+  Thermostat,
+  ValveConfigurationAndControl,
+  WindowCovering,
+}
+
+// Export Matter.js clusters and devices for direct access
+// Note: types.ts is only imported by MatterServer, MatterBridgeManager, etc.
+// which are themselves lazy-loaded, so these imports only happen when Matter is used
+export { clusters, devices }
+
+/**
+ * Friendly device type names for the Plugin API
+ * Maps simplified names to actual Matter.js device types
+ */
+export const deviceTypes = {
+  // Lighting
+  OnOffLight: devices.OnOffLightDevice,
+  DimmableLight: devices.DimmableLightDevice,
+  ColorTemperatureLight: devices.ColorTemperatureLightDevice,
+  ExtendedColorLight: devices.ExtendedColorLightDevice,
+
+  // Switches & Outlets
+  OnOffSwitch: devices.OnOffLightSwitchDevice,
+  OnOffOutlet: devices.OnOffPlugInUnitDevice,
+  DimmableOutlet: devices.DimmablePlugInUnitDevice,
+
+  // Sensors
+  // Only Unknown, Good and Poor are allowed by a plain AirQuality cluster - Fair,
+  // Moderate, Very Poor and Extremely Poor each need their own feature, and
+  // without them matter.js refuses the value (homebridge-matter#7). A sensor
+  // only ever reports one level at a time, so offering all of them costs
+  // nothing.
+  AirQualitySensor: devices.AirQualitySensorDevice.with(
+    devices.AirQualitySensorRequirements.AirQualityServer.with('Fair', 'Moderate', 'VeryPoor', 'ExtremelyPoor'),
+  ),
+  TemperatureSensor: devices.TemperatureSensorDevice,
+  HumiditySensor: devices.HumiditySensorDevice,
+  LightSensor: devices.LightSensorDevice,
+  // OccupancySensing is not part of the base device type — matter.js requires the
+  // detector-type feature to be chosen. OccupancyEvent additionally makes matter.js
+  // emit the OccupancyChanged event automatically when the occupancy state changes.
+  MotionSensor: devices.OccupancySensorDevice.with(devices.OccupancySensorRequirements.OccupancySensingServer.with('PassiveInfrared', 'OccupancyEvent')),
+  ContactSensor: devices.ContactSensorDevice,
+  LeakSensor: devices.WaterLeakDetectorDevice,
+  // SmokeCoAlarm is not part of the base device type — matter.js requires the
+  // SmokeAlarm/CoAlarm features to be chosen. They are auto-detected from the
+  // accessory's declared cluster attributes at registration
+  // (see applySmokeCoAlarmFeatures in serverHelpers.ts).
+  SmokeSensor: devices.SmokeCoAlarmDevice,
+  // Standalone electrical sensor (power/energy metering, e.g. a solar or
+  // whole-home meter). Its clusters are feature-gated in matter.js, so the
+  // PowerTopology / ElectricalPowerMeasurement / ElectricalEnergyMeasurement
+  // servers are auto-detected from the accessory's declared cluster attributes
+  // at registration (see applyElectricalMeasurementClusters in serverHelpers.ts).
+  // The same detection also runs for outlets, so an OnOffOutlet that declares
+  // electricalPowerMeasurement / electricalEnergyMeasurement state gets these
+  // clusters too — no separate device type needed for a metering smart plug.
+  ElectricalSensor: devices.ElectricalSensorEndpoint,
+
+  // HVAC
+  // The Thermostat cluster is feature-gated in matter.js, so the base
+  // ThermostatDevice carries no thermostat cluster. It is added at registration
+  // with the features detected from the accessory's declared setpoints — a
+  // heating-only accessory gets Heating alone rather than being forced to claim
+  // cooling it cannot do (see applyThermostatFeatures in serverHelpers.ts).
+  // Compose the cluster yourself with `.with(...)` to override the detection.
+  Thermostat: devices.ThermostatDevice,
+  Fan: devices.FanDevice,
+
+  // Security
+  DoorLock: devices.DoorLockDevice,
+
+  // Window Coverings (features will be auto-detected based on accessory attributes)
+  WindowCovering: devices.WindowCoveringDevice,
+
+  // Closures — garage doors, gates and similar. Until the Closures work landed
+  // in the spec there was no such device type, and the usual stand-in was
+  // WindowCovering, which drives the hardware correctly but presents as a blind.
+  //
+  // ⚠️ Apple Home does not support this type yet, so an accessory using it will
+  // not appear there. It is exposed for plugin authors building against Google
+  // or Alexa, and to have the groundwork done for whenever Apple catches up.
+  //
+  // ClosureControl is not part of the base device type — matter.js requires a
+  // feature to be chosen, and without one the endpoint is built carrying only
+  // Identify and any closure state a plugin supplies is silently dropped.
+  // Positioning is the one that makes open/closed/part-open meaningful, which
+  // is what a garage door or gate needs; compose your own with `.with(...)` to
+  // add Speed, Ventilation, Pedestrian or the rest.
+  //
+  // matter.js's own ClosureControlServer leaves every command unimplemented, so
+  // use ours: it records the move, and is replaced by the handler-calling
+  // version when a plugin supplies closureControl handlers.
+  Closure: devices.ClosureDevice.with(DefaultClosureControlServer.with('Positioning')),
+
+  // Media — the name says video, but nothing in the device type is video-only:
+  // it carries OnOff (power), MediaPlayback (play/pause/stop) and KeypadInput.
+  // An audio-only device is a legitimate use of it. MediaInput, AudioOutput,
+  // Channel and TargetNavigator are optional in the spec and NOT included -
+  // compose them with `.with(...)` if a player needs source selection.
+  //
+  // Volume and mute are NOT here. In Matter those live on a separate Speaker
+  // endpoint (LevelControl + OnOff), composed alongside this one under a
+  // BridgedNode — which is why both are exposed together.
+  //
+  // ⚠️ Apple Home does not support either type yet; see the note on Closure.
+  //
+  // MediaPlayback and KeypadInput are the device type's two mandatory command
+  // clusters and matter.js implements neither, so the same substitution as
+  // Closure applies - otherwise every play/pause/key press would fail.
+  MediaPlayer: devices.BasicVideoPlayerDevice.with(DefaultMediaPlaybackServer, DefaultKeypadInputServer),
+  Speaker: devices.SpeakerDevice,
+
+  // Appliances
+  // RVC optional clusters (RvcCleanMode, ServiceArea) are added dynamically in matterServer
+  // based on whether they're defined in the accessory configuration
+  RoboticVacuumCleaner: devices.RoboticVacuumCleanerDevice,
+
+  // Water Valve
+  // The matter.js base server leaves open/close unimplemented, so use our
+  // default implementation that reflects the commands in the cluster state.
+  // Accessories with valve handlers get HomebridgeValveConfigurationAndControlServer
+  // (which extends the default) applied at registration.
+  WaterValve: devices.WaterValveDevice.with(DefaultValveConfigurationAndControlServer),
+
+  // Water Heater
+  // A hot water tank or boiler. Its thermostat is feature-gated like every
+  // other, and a water heater only heats, so it carries Heating alone. Declare
+  // the water temperature as the thermostat's externalMeasuredIndoorTemperature
+  // and the target as occupiedHeatingSetpoint. waterHeaterMode needs its
+  // supportedModes and currentMode, and waterHeaterManagement its heaterTypes,
+  // heatDemand and boostState - matter.js will not build the endpoint without
+  // them. matter.js leaves boost unimplemented, so the default server below
+  // records it; supply waterHeaterMode/waterHeaterManagement handlers to act
+  // on mode changes and boosts.
+  //
+  // ⚠️ It is not yet known how Apple Home presents this type. Test it there
+  // before swapping out a heating-only Thermostat that already works.
+  WaterHeater: devices.WaterHeaterDevice.with(
+    devices.WaterHeaterRequirements.ThermostatServer.with('Heating'),
+    DefaultWaterHeaterManagementServer,
+  ),
+
+  // Energy (#4034)
+  // ⚠️ It is not yet known how Apple Home presents these types. Test them
+  // there before swapping out an ElectricalSensor or outlet that already works.
+  //
+  // Solar power and battery storage are composed devices: the parent carries
+  // the type, and its parts carry what the spec requires of it. A part that
+  // declares powerSource state becomes a PowerSource (Wired with no battery
+  // attributes, Battery with them), one that declares electrical measurement
+  // state an ElectricalSensor, and a DeviceEnergyManagement part takes
+  // controller requests to adjust power.
+  //   SolarPower:     a wired PowerSource + an ElectricalSensor reporting
+  //                   voltage, activeCurrent and cumulativeEnergyExported
+  //   BatteryStorage: two PowerSources (the battery, and the wired grid side),
+  //                   an ElectricalSensor for each of the AC and DC sides, and a
+  //                   DeviceEnergyManagement declaring powerAdjustmentCapability
+  SolarPower: devices.SolarPowerDevice,
+  BatteryStorage: devices.BatteryStorageDevice,
+  // An EV charger. Its own endpoint carries the charger and its mode
+  // (energyEvseMode needs supportedModes and currentMode); add a wired
+  // PowerSource, an ElectricalSensor and a DeviceEnergyManagement declaring a
+  // forecast as parts. matter.js implements none of the charger's commands, so
+  // the default server records them - supply energyEvse handlers to act on
+  // them. Features come from the declared state: stateOfCharge or
+  // batteryCapacity turn on SoCReporting, vehicleId PlugAndCharge, and any
+  // discharging attribute V2X (see applyEnergyEvseFeatures in serverHelpers.ts).
+  EnergyEvse: devices.EnergyEvseDevice.with(DefaultEnergyEvseServer.with()),
+  // A meter reporting power and energy. Like ElectricalSensor, its measurement
+  // clusters come from the declared electricalPowerMeasurement /
+  // electricalEnergyMeasurement state.
+  ElectricalMeter: devices.ElectricalMeterDevice,
+  // A utility's own meter - declare meterIdentification state - and a tariff.
+  // Both are Matter 1.5 types, so controllers may not know them yet. A tariff
+  // carries no cluster of its own: compose CommodityPrice or CommodityTariff
+  // from deviceRequirements.ElectricalEnergyTariff, and give it the 1 to 6
+  // descriptor tags it requires as clusters.descriptor.tagList.
+  ElectricalUtilityMeter: devices.ElectricalUtilityMeterDevice,
+  ElectricalEnergyTariff: devices.ElectricalEnergyTariffDevice,
+  // The parts the types above are composed from. DeviceEnergyManagement's
+  // features come from the declared state: powerAdjustmentCapability turns on
+  // PowerAdjustment and forecast PowerForecastReporting (see
+  // applyDeviceEnergyManagementFeatures in serverHelpers.ts). Compose the
+  // others - Pausable, StartTimeAdjustment and so on - with
+  // deviceRequirements.DeviceEnergyManagement. matter.js implements none of
+  // its commands, so the default server records them.
+  PowerSource: devices.PowerSourceEndpoint,
+  DeviceEnergyManagement: devices.DeviceEnergyManagementEndpoint.with(DefaultDeviceEnergyManagementServer.with()),
+
+  // Other
+  // Switch is not part of the base device type — matter.js requires latching vs
+  // momentary to be chosen. The momentary feature set matches the press/release
+  // helpers in SwitchAPI: MomentarySwitchRelease enables shortRelease/longRelease,
+  // MomentarySwitchLongPress enables long-press detection, and
+  // MomentarySwitchMultiPress enables multiPressComplete sequences.
+  GenericSwitch: devices.GenericSwitchDevice.with(devices.GenericSwitchRequirements.SwitchServer.with('MomentarySwitch', 'MomentarySwitchRelease', 'MomentarySwitchLongPress', 'MomentarySwitchMultiPress')),
+  // PumpConfigurationAndControl is not part of the base device type — matter.js
+  // requires a control-mode feature to be chosen. ConstantSpeed is the simplest
+  // mode for on/off and level-controlled pumps bridged from HomeKit.
+  Pump: devices.PumpDevice.with(devices.PumpRequirements.PumpConfigurationAndControlServer.with('ConstantSpeed')),
+  // Thermostat is not part of the base device type — matter.js requires the
+  // Heating/Cooling features to be chosen. Both are enabled (like the Thermostat
+  // device type above) so heat-capable air conditioners work and cooling-only
+  // accessories simply leave the heating attributes at their defaults.
+  // AutoMode is added at registration when the accessory asks for it - it
+  // starts in Auto (systemMode 1) or declares minSetpointDeadBand (see
+  // applyRoomAirConditionerAutoMode in serverHelpers.ts).
+  RoomAirConditioner: devices.RoomAirConditionerDevice.with(devices.RoomAirConditionerRequirements.ThermostatServer.with('Heating', 'Cooling')),
+
+  // Composed device container — use as parent for accessories with parts.
+  // Children appear as a single accessory in Apple Home, expandable into separate tiles.
+  BridgedNode: BridgedNodeEndpoint,
+} as const
+
+/**
+ * The matter.js "requirements" behind the feature-gated device types above,
+ * keyed to match {@link deviceTypes}.
+ *
+ * Several Matter clusters are feature-gated: matter.js will not compose them
+ * until the features are chosen, which is why the entries in `deviceTypes`
+ * above call `.with(...)` on these. Homebridge picks sensible features from the
+ * state an accessory declares, and that is right almost always — but the
+ * choices are not always derivable.
+ *
+ * The thermostat is the clearest case: declaring a heating and a cooling
+ * setpoint gets AutoMode too, because that is what nearly every thermostat
+ * wants. A device that genuinely heats and cools but has no auto mode has no
+ * way to say so, and `HEAT` + `COOL` without `AUTO` is perfectly legal in the
+ * spec. Exposing these lets a plugin compose the cluster itself:
+ *
+ * ```typescript
+ * deviceType: api.matter.deviceTypes.Thermostat.with(
+ *   api.matter.deviceRequirements.Thermostat.ThermostatServer.with('Heating', 'Cooling'),
+ * )
+ * ```
+ *
+ * Homebridge leaves a device type alone when the plugin has already composed
+ * the cluster, so the features above are used as given rather than detected.
+ */
+export const deviceRequirements = {
+  MotionSensor: devices.OccupancySensorRequirements,
+  SmokeSensor: devices.SmokeCoAlarmRequirements,
+  ElectricalSensor: devices.ElectricalSensorRequirements,
+  Thermostat: devices.ThermostatRequirements,
+  Closure: devices.ClosureRequirements,
+  RoboticVacuumCleaner: devices.RoboticVacuumCleanerRequirements,
+  WaterValve: devices.WaterValveRequirements,
+  GenericSwitch: devices.GenericSwitchRequirements,
+  Pump: devices.PumpRequirements,
+  RoomAirConditioner: devices.RoomAirConditionerRequirements,
+  WindowCovering: devices.WindowCoveringRequirements,
+  WaterHeater: devices.WaterHeaterRequirements,
+  EnergyEvse: devices.EnergyEvseRequirements,
+  ElectricalMeter: devices.ElectricalMeterRequirements,
+  ElectricalUtilityMeter: devices.ElectricalUtilityMeterRequirements,
+  ElectricalEnergyTariff: devices.ElectricalEnergyTariffRequirements,
+  PowerSource: devices.PowerSourceRequirements,
+  DeviceEnergyManagement: devices.DeviceEnergyManagementRequirements,
+} as const
+
+/**
+ * Matter Cluster Names
+ * Commonly used cluster names for type safety and autocomplete
+ * Use these with api.updateMatterAccessoryState() and api.getAccessoryState()
+ *
+ * @example
+ * ```typescript
+ * With autocomplete and type safety:
+ * api.updateMatterAccessoryState(uuid, api.matterClusterNames.OnOff, { onOff: true })
+ * api.getAccessoryState(uuid, api.matterClusterNames.LevelControl)
+ * ```
+ */
+export const clusterNames = {
+  // Control Clusters
+  OnOff: 'onOff',
+  LevelControl: 'levelControl',
+  ColorControl: 'colorControl',
+  DoorLock: 'doorLock',
+  WindowCovering: 'windowCovering',
+  Thermostat: 'thermostat',
+  FanControl: 'fanControl',
+
+  // Sensor Clusters
+  AirQuality: 'airQuality',
+  CarbonMonoxideConcentrationMeasurement: 'carbonMonoxideConcentrationMeasurement',
+  NitrogenDioxideConcentrationMeasurement: 'nitrogenDioxideConcentrationMeasurement',
+  OzoneConcentrationMeasurement: 'ozoneConcentrationMeasurement',
+  Pm10ConcentrationMeasurement: 'pm10ConcentrationMeasurement',
+  Pm25ConcentrationMeasurement: 'pm25ConcentrationMeasurement',
+  TemperatureMeasurement: 'temperatureMeasurement',
+  RelativeHumidityMeasurement: 'relativeHumidityMeasurement',
+  IlluminanceMeasurement: 'illuminanceMeasurement',
+  OccupancySensing: 'occupancySensing',
+  BooleanState: 'booleanState',
+  SmokeCoAlarm: 'smokeCoAlarm',
+
+  // Robotic Vacuum Cleaner Clusters
+  RvcRunMode: 'rvcRunMode',
+  RvcOperationalState: 'rvcOperationalState',
+  RvcCleanMode: 'rvcCleanMode',
+  ServiceArea: 'serviceArea',
+
+  // Power
+  PowerSource: 'powerSource',
+
+  // Pump & Other
+  PumpConfigurationAndControl: 'pumpConfigurationAndControl',
+
+  // Valve
+  ValveConfigurationAndControl: 'valveConfigurationAndControl',
+
+  // Water heater
+  WaterHeaterMode: 'waterHeaterMode',
+  WaterHeaterManagement: 'waterHeaterManagement',
+
+  // Energy management, EV chargers and meters
+  DeviceEnergyManagement: 'deviceEnergyManagement',
+  DeviceEnergyManagementMode: 'deviceEnergyManagementMode',
+  EnergyEvse: 'energyEvse',
+  EnergyEvseMode: 'energyEvseMode',
+  MeterIdentification: 'meterIdentification',
+
+  // Closures — garage doors, gates and similar
+  ClosureControl: 'closureControl',
+
+  // Media — the player endpoint; volume and mute are levelControl/onOff on a
+  // separate Speaker endpoint rather than anything here
+  MediaPlayback: 'mediaPlayback',
+  KeypadInput: 'keypadInput',
+
+  // Identification
+  Identify: 'identify',
+
+  // Switch (GenericSwitch - stateless remotes and buttons)
+  Switch: 'switch',
+
+  // Electrical Measurement (power/energy readings on outlets, ElectricalSensor, ...)
+  ElectricalPowerMeasurement: 'electricalPowerMeasurement',
+  ElectricalEnergyMeasurement: 'electricalEnergyMeasurement',
+
+  // Device Information (read-only, set during registration)
+  BasicInformation: 'basicInformation',
+  BridgedDeviceBasicInformation: 'bridgedDeviceBasicInformation',
+} as const
+
+/**
+ * Type for Matter cluster names
+ * Provides type safety for cluster name strings
+ */
+export type MatterClusterName = typeof clusterNames[keyof typeof clusterNames]
+
+/**
+ * Type-safe accessory map for MatterServer
+ */
+export type MatterAccessoryMap = Map<string, InternalMatterAccessory>
+
+/**
+ * Type representing an Endpoint with settable state
+ *
+ * This type is used when we need to check if an endpoint has a state
+ * object and a set method. The state structure varies by device type,
+ * so we use a generic Record type.
+ */
+export type EndpointWithSettableState = Endpoint & {
+  state: Record<string, unknown>
+  set: (values: Record<string, Record<string, unknown>>) => Promise<void>
+}
+
+/**
+ * Check if endpoint has state property (type guard)
+ *
+ * We use a runtime check to determine if an endpoint has a settable state.
+ * This is necessary because Endpoint's state structure is complex and varies
+ * based on device type.
+ *
+ * @param endpoint - The endpoint to check
+ * @returns True if endpoint has state and set method
+ */
+export function hasEndpointState(endpoint: Endpoint): endpoint is EndpointWithSettableState {
+  return 'state' in endpoint
+    && typeof (endpoint as { state?: unknown }).state === 'object'
+    && (endpoint as { state?: unknown }).state !== null
+    && 'set' in endpoint
+    && typeof (endpoint as { set?: unknown }).set === 'function'
+}
+
+/**
+ * Safely update endpoint state
+ * Uses the Endpoint's set method to update cluster attributes
+ *
+ * @param endpoint - The Matter endpoint
+ * @param cluster - Cluster name
+ * @param attributes - Attributes to update
+ * @throws {Error} If endpoint does not support state updates
+ */
+export async function updateEndpointState(
+  endpoint: Endpoint,
+  cluster: string,
+  attributes: Record<string, unknown>,
+): Promise<void> {
+  if (!hasEndpointState(endpoint)) {
+    throw new Error('Endpoint does not support state updates')
+  }
+
+  const updateObject = { [cluster]: attributes }
+  await endpoint.set(updateObject)
+}
+
+/**
+ * Device type with behaviors (internal Matter.js structure)
+ * Used when we need to check if a device type supports .with()
+ */
+export interface DeviceTypeWithBehaviors extends EndpointType {
+  with: (...behaviors: BehaviorType[]) => DeviceTypeWithBehaviors
+}
+
+/**
+ * WindowCovering cluster with dynamic attributes
+ */
+export interface WindowCoveringCluster {
+  type?: number
+  configStatus?: {
+    operational?: boolean
+    onlineReserved?: boolean
+    liftMovementReversed?: boolean
+    liftPositionAware?: boolean
+    tiltPositionAware?: boolean
+    liftEncoderControlled?: boolean
+    tiltEncoderControlled?: boolean
+  }
+  targetPositionLiftPercent100ths?: number
+  currentPositionLiftPercent100ths?: number
+  targetPositionTiltPercent100ths?: number
+  currentPositionTiltPercent100ths?: number
+  operationalStatus?: {
+    global: number
+    lift: number
+    tilt: number
+  }
+}
+
+/**
+ * Type-safe cluster access for WindowCovering
+ */
+export function getWindowCoveringCluster(accessory: MatterAccessory): WindowCoveringCluster | undefined {
+  return accessory.clusters?.windowCovering as WindowCoveringCluster | undefined
+}
+
+/**
+ * Events emitted by MatterServer
+ */
+export interface MatterServerEvents {
+  'commissioning-status-changed': (commissioned: boolean, fabricCount: number) => void
+  'stateChange': (data: { uuid: string, cluster: string, state: Record<string, unknown>, partId?: string }) => void
+}
